@@ -1,0 +1,26 @@
+# Ambiente — NUNCA versionar
+.env
+*.env
+.env.*
+
+# Java / Maven
+API/target/
+*.class
+*.jar
+*.war
+
+# Angular / Node
+APP/node_modules/
+APP/dist/
+APP/.angular/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.suo
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
