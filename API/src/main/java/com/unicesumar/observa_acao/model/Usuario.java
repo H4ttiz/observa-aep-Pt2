@@ -49,6 +49,10 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private Boolean ativo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "criado_por")
+    private Usuario criadoPor;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + tipoUsuario.name()));
