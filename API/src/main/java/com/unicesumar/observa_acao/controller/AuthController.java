@@ -1,8 +1,10 @@
 package com.unicesumar.observa_acao.controller;
 
+import com.unicesumar.observa_acao.dto.auth.CidadaoRequestDTO;
 import com.unicesumar.observa_acao.dto.auth.LoginRequestDTO;
 import com.unicesumar.observa_acao.dto.auth.LoginResponseDTO;
 import com.unicesumar.observa_acao.dto.auth.RefreshTokenRequestDTO;
+import com.unicesumar.observa_acao.dto.usuario.UsuarioResponseDTO;
 import com.unicesumar.observa_acao.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Autenticação", description = "Endpoints de login, refresh e logout")
+@Tag(name = "Autenticação", description = "Endpoints de login, refresh, logout e cadastro público")
 public class AuthController {
 
     private final AuthService authService;
@@ -46,7 +49,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "Encerra a sessão do usuário e invalida todos os refresh tokens")
+    @Operation(summary = "Encerra a sessão e invalida todos os refresh tokens do usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Logout realizado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Refresh token inválido")
@@ -54,5 +57,17 @@ public class AuthController {
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequestDTO dto) {
         authService.logout(dto);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/cadastro")
+    @Operation(summary = "Cadastro público de cidadão")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Usuário cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos, CPF inválido ou já cadastrado"),
+            @ApiResponse(responseCode = "400", description = "Email já cadastrado")
+    })
+    public ResponseEntity<UsuarioResponseDTO> cadastrar(@Valid @RequestBody CidadaoRequestDTO dto) {
+        UsuarioResponseDTO response = authService.cadastrarCidadao(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
