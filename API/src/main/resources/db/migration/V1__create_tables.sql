@@ -21,7 +21,7 @@ CREATE TABLE enderecos_usuario (
     complemento VARCHAR(100),
     bairro      VARCHAR(100) NOT NULL,
     cidade      VARCHAR(100) NOT NULL,
-    estado      CHAR(2)      NOT NULL,
+    estado      VARCHAR(2)      NOT NULL,
     cep         VARCHAR(9)   NOT NULL
 );
 
@@ -41,7 +41,7 @@ CREATE TABLE enderecos_solicitacao (
     complemento VARCHAR(100),
     bairro      VARCHAR(100) NOT NULL,
     cidade      VARCHAR(100) NOT NULL,
-    estado      CHAR(2)      NOT NULL,
+    estado      VARCHAR(2)      NOT NULL,
     cep         VARCHAR(9)   NOT NULL,
     latitude    DOUBLE PRECISION,
     longitude   DOUBLE PRECISION
