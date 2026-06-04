@@ -1,4 +1,13 @@
 package com.unicesumar.observa_acao.dto.auth;
 
-public record LoginResponseDTO() {
+import com.unicesumar.observa_acao.enums.TipoUsuario;
+
+public record LoginResponseDTO(
+
+        String accessToken,
+        String refreshToken,
+        TipoUsuario tipoUsuario,
+        String nomeUsuario,
+        long expiresIn
+) {
 }
