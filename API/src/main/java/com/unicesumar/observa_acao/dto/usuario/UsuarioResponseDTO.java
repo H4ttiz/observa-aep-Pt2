@@ -11,8 +11,11 @@ public record UsuarioResponseDTO(
         String email,
         String cpf,
         String celular,
+        String fotoPerfil,
         TipoUsuario tipoUsuario,
         Boolean ativo,
-        LocalDateTime dataCriacao
+        LocalDateTime dataCriacao,
+        Long criadoPorId,
+        String criadoPorNome
 ) {
 }
