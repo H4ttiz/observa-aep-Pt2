@@ -14,6 +14,8 @@ const TOKEN_KEY    = 'oa_accessToken';
 const REFRESH_KEY  = 'oa_refreshToken';
 const TIPO_KEY     = 'oa_tipoUsuario';
 const NOME_KEY     = 'oa_nomeUsuario';
+const USER_ID_KEY  = 'oa_userId';
+const FOTO_KEY     = 'oa_fotoPerfil';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -22,6 +24,9 @@ export class AuthService {
 
   private _autenticado$ = new BehaviorSubject<boolean>(this.temToken());
   readonly autenticado$ = this._autenticado$.asObservable();
+
+  private _fotoPerfil$ = new BehaviorSubject<string | null>(localStorage.getItem(FOTO_KEY));
+  readonly fotoPerfil$ = this._fotoPerfil$.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -32,6 +37,7 @@ export class AuthService {
         localStorage.setItem(REFRESH_KEY, res.refreshToken);
         localStorage.setItem(TIPO_KEY,    res.tipoUsuario);
         localStorage.setItem(NOME_KEY,    res.nomeUsuario);
+        localStorage.setItem(USER_ID_KEY, String(res.userId));
         this._autenticado$.next(true);
       })
     );
@@ -64,6 +70,21 @@ export class AuthService {
     return localStorage.getItem(TIPO_KEY);
   }
 
+  getUserId(): number | null {
+    const v = localStorage.getItem(USER_ID_KEY);
+    return v ? Number(v) : null;
+  }
+
+  getFotoPerfil(): string | null {
+    return this._fotoPerfil$.value;
+  }
+
+  setFotoPerfil(url: string | null): void {
+    this._fotoPerfil$.next(url);
+    if (url) localStorage.setItem(FOTO_KEY, url);
+    else localStorage.removeItem(FOTO_KEY);
+  }
+
   isLoggedIn(): boolean {
     return this.temToken();
   }
@@ -77,6 +98,9 @@ export class AuthService {
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(TIPO_KEY);
     localStorage.removeItem(NOME_KEY);
+    localStorage.removeItem(USER_ID_KEY);
+    localStorage.removeItem(FOTO_KEY);
+    this._fotoPerfil$.next(null);
     this._autenticado$.next(false);
     this.router.navigate(['/auth']);
   }
