@@ -51,6 +51,7 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenService.criarRefreshToken(usuario);
 
         return new LoginResponseDTO(
+                usuario.getId(),
                 accessToken,
                 refreshToken.getToken(),
                 usuario.getTipoUsuario(),
@@ -68,6 +69,7 @@ public class AuthService {
         String novoAccessToken = jwtUtil.gerarToken(usuario);
 
         return new LoginResponseDTO(
+                usuario.getId(),
                 novoAccessToken,
                 novoRefreshToken.getToken(),
                 usuario.getTipoUsuario(),
