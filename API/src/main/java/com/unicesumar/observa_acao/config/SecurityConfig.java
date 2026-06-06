@@ -4,6 +4,7 @@ import com.unicesumar.observa_acao.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -62,6 +63,13 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        // /usuarios/perfil e /usuarios/perfil/foto — qualquer usuário autenticado
+                        .requestMatchers(HttpMethod.GET,   "/usuarios/perfil").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/usuarios/perfil").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/usuarios/perfil/foto").authenticated()
+                        // demais endpoints de /usuarios — somente ADMINISTRADOR
+                        .requestMatchers("/usuarios", "/usuarios/**").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
