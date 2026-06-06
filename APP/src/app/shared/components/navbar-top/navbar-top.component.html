@@ -1,0 +1,53 @@
+<header class="top-navbar">
+
+  <div class="navbar-brand">
+    <div class="brand-icon">
+      <mat-icon>account_balance</mat-icon>
+    </div>
+    <span class="brand-name">ObservaAção</span>
+  </div>
+
+  <div class="navbar-actions">
+
+    <button mat-icon-button class="notif-btn" matTooltip="Notificações (em breve)" aria-label="Notificações">
+      <mat-icon>notifications_none</mat-icon>
+    </button>
+
+    <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-btn" aria-label="Menu do usuário">
+      <ng-container *ngIf="fotoPerfil$ | async as foto; else iniciais">
+        <img [src]="foto" class="avatar avatar-img" alt="Foto de perfil" />
+      </ng-container>
+      <ng-template #iniciais>
+        <div class="avatar">{{ iniciais }}</div>
+      </ng-template>
+    </button>
+
+    <mat-menu #userMenu="matMenu" xPosition="before" class="user-menu">
+      <div class="menu-header">
+        <ng-container *ngIf="fotoPerfil$ | async as foto; else menuIniciais">
+          <img [src]="foto" class="menu-avatar menu-avatar-img" alt="Foto de perfil" />
+        </ng-container>
+        <ng-template #menuIniciais>
+          <div class="menu-avatar">{{ iniciais }}</div>
+        </ng-template>
+        <span class="menu-nome">{{ nomeUsuario }}</span>
+      </div>
+      <div class="menu-divider"></div>
+      <button mat-menu-item [routerLink]="['/perfil']">
+        <mat-icon>person_outline</mat-icon>
+        <span>Meu Perfil</span>
+      </button>
+      <button mat-menu-item disabled>
+        <mat-icon>settings</mat-icon>
+        <span>Configurações</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button mat-menu-item class="menu-logout" (click)="logoutEvt.emit()">
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
+      </button>
+    </mat-menu>
+
+  </div>
+
+</header>

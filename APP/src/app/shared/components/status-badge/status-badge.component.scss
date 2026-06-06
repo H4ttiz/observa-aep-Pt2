@@ -1,0 +1,31 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+
+  // ── Status ──
+  &.status-AGUARDANDO_APROVACAO { background: #FEF3C7; color: #92400E; }
+  &.status-APROVADA             { background: #D1FAE5; color: #065F46; }
+  &.status-AGUARDANDO_ATENDENTE { background: #DBEAFE; color: #1E40AF; }
+  &.status-EM_ANDAMENTO         { background: #CCFBF1; color: #115E59; }
+  &.status-FINALIZADA           { background: #BBF7D0; color: #14532D; }
+  &.status-REJEITADA            { background: #FEE2E2; color: #991B1B; }
+
+  // ── Prioridade ──
+  &.prioridade-BAIXA   { background: #F1F5F9; color: #475569; }
+  &.prioridade-MEDIA   { background: #DBEAFE; color: #1D4ED8; }
+  &.prioridade-ALTA    { background: #FFEDD5; color: #C2410C; }
+  &.prioridade-URGENTE { background: #FEE2E2; color: #B91C1C; }
+
+  // ── TipoLog ──
+  &.log-CRIACAO       { background: #D1FAE5; color: #065F46; }
+  &.log-ALTERACAO     { background: #DBEAFE; color: #1E40AF; }
+  &.log-EXCLUSAO      { background: #FEE2E2; color: #991B1B; }
+  &.log-LOGIN         { background: #F1F5F9; color: #475569; }
+  &.log-ACESSO_NEGADO { background: #FFEDD5; color: #C2410C; }
+}

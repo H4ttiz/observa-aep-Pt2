@@ -37,11 +37,13 @@ html, body {
 }
 
 // ===== Snackbar overrides =====
-.snack-error .mdc-snackbar__surface {
+.snack-error .mdc-snackbar__surface,
+.toast-error .mdc-snackbar__surface {
   background-color: #C0392B !important;
 }
 
-.snack-success .mdc-snackbar__surface {
+.snack-success .mdc-snackbar__surface,
+.toast-success .mdc-snackbar__surface {
   background-color: #2E8B7B !important;
 }
 

@@ -1,0 +1,156 @@
+$primary: #2E8B7B;
+$accent:  #59C3B2;
+$white:   #FFFFFF;
+$text:    #2C3E50;
+$muted:   #7F8C8D;
+$border:  #E8ECEB;
+
+.top-navbar {
+  height: 60px;
+  background: $white;
+  border-bottom: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #59C3B2, #2E8B7B);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      color: $white;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .brand-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $primary;
+    letter-spacing: -0.3px;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .notif-btn {
+    color: $muted;
+    &:hover { color: $primary; }
+  }
+
+  .avatar-btn { padding: 0; }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #59C3B2, #2E8B7B);
+    color: $white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+
+    &:hover { box-shadow: 0 0 0 3px rgba(89,195,178,0.3); }
+  }
+
+  .avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $border;
+    background: none;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+    display: block;
+
+    &:hover { box-shadow: 0 0 0 3px rgba(89,195,178,0.3); }
+  }
+}
+
+// ── Menu global styles (applied to the mat-menu panel) ──
+::ng-deep .user-menu .mat-mdc-menu-content {
+  padding: 0;
+}
+
+.menu-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+
+  .menu-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #59C3B2, #2E8B7B);
+    color: $white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .menu-avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $border;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .menu-nome {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+}
+
+.menu-divider {
+  height: 1px;
+  background: #E2E8F0;
+  margin: 4px 0;
+}
+
+.menu-logout {
+  color: #DC2626 !important;
+  mat-icon { color: #DC2626 !important; }
+}
