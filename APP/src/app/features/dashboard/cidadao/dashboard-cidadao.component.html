@@ -1,0 +1,172 @@
+<div class="dashboard-layout">
+  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()"></app-navbar-top>
+
+  <div class="dashboard-body">
+    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" (itemSelected)="setTab($event)"></app-navbar-lateral>
+
+    <main class="content-area">
+
+      <!-- ══ INÍCIO ══ -->
+      <div *ngIf="activeTab === 'inicio'" class="tab-content">
+        <div class="page-header">
+          <h2>Bem-vindo, <strong>{{ nome }}</strong>!</h2>
+          <p class="page-subtitle">Seu portal de participação cidadã</p>
+        </div>
+
+        <div class="info-banner">
+          <mat-icon>info_outline</mat-icon>
+          <p>
+            O <strong>ObservaAção</strong> é uma plataforma alinhada ao ODS 16 da ONU — Paz, Justiça e Instituições Eficazes.
+            Aqui você pode registrar problemas urbanos, acompanhar o andamento das suas solicitações e contribuir
+            para uma gestão pública mais transparente e eficiente.
+          </p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="info-card">
+            <div class="card-icon green"><mat-icon>edit_note</mat-icon></div>
+            <h3>Como abrir uma solicitação</h3>
+            <p>Acesse "Nova Solicitação" no menu lateral, preencha o formulário com o título, descrição,
+              categoria e localização do problema. Você pode se identificar ou permanecer anônimo.</p>
+          </div>
+          <div class="info-card">
+            <div class="card-icon blue"><mat-icon>track_changes</mat-icon></div>
+            <h3>Acompanhe sua solicitação</h3>
+            <p>Em "Minhas Solicitações" você pode ver o status de cada registro, receber atualizações
+              do atendente responsável e visualizar o histórico de mudanças.</p>
+          </div>
+          <div class="info-card">
+            <div class="card-icon teal"><mat-icon>visibility</mat-icon></div>
+            <h3>Transparência pública</h3>
+            <p>Todas as solicitações passam por aprovação de um gestor e são atribuídas a atendentes
+              municipais. O processo é auditado e registrado para garantir a responsabilidade institucional.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ NOVA SOLICITAÇÃO ══ -->
+      <div *ngIf="activeTab === 'nova-solicitacao'" class="tab-content">
+        <div class="page-header">
+          <h2>Nova Solicitação</h2>
+          <p class="page-subtitle">Registre um problema público para análise da prefeitura</p>
+        </div>
+
+        <div class="form-card">
+          <div class="form-group">
+            <label>Título <span class="required">*</span></label>
+            <input class="form-input" type="text" placeholder="Ex: Buraco na Rua das Flores" />
+          </div>
+
+          <div class="form-group">
+            <label>Descrição <span class="required">*</span></label>
+            <textarea class="form-input form-textarea" placeholder="Descreva o problema com detalhes..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Categoria <span class="required">*</span></label>
+            <select class="form-input form-select">
+              <option value="">Selecione uma categoria</option>
+              <option>Infraestrutura</option>
+              <option>Iluminação Pública</option>
+              <option>Limpeza Urbana</option>
+              <option>Trânsito</option>
+              <option>Meio Ambiente</option>
+              <option>Saneamento</option>
+              <option>Patrimônio Público</option>
+              <option>Acessibilidade</option>
+              <option>Parques e Lazer</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label>Rua / Logradouro</label>
+              <input class="form-input" type="text" placeholder="Rua, Avenida, Praça..." />
+            </div>
+            <div class="form-group">
+              <label>Número</label>
+              <input class="form-input" type="text" placeholder="S/N" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Bairro</label>
+              <input class="form-input" type="text" placeholder="Nome do bairro" />
+            </div>
+            <div class="form-group">
+              <label>Cidade</label>
+              <input class="form-input" type="text" placeholder="Maringá" />
+            </div>
+          </div>
+
+          <div class="anonimo-toggle">
+            <label class="toggle-label">
+              <input type="checkbox" class="toggle-check" />
+              <span class="toggle-text">
+                <mat-icon>person_off</mat-icon>
+                Enviar de forma anônima
+              </span>
+            </label>
+            <p class="toggle-hint">Se marcado, seu nome não será exibido ao atendente nem ao público.</p>
+          </div>
+
+          <button class="btn-primary" (click)="onEnviarSolicitacao()">
+            <mat-icon>send</mat-icon>
+            Enviar Solicitação
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ MINHAS SOLICITAÇÕES ══ -->
+      <div *ngIf="activeTab === 'minhas'" class="tab-content">
+        <div class="page-header">
+          <h2>Minhas Solicitações</h2>
+          <p class="page-subtitle">Histórico e acompanhamento dos seus registros</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of minhasSolicitacoes">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td><app-status-badge [status]="s.status"></app-status-badge></td>
+                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver Detalhes
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!minhasSolicitacoes.length">
+                <td colspan="6" class="empty-row">Nenhuma solicitação encontrada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Drawer de detalhes -->
+<app-solicitacao-detalhes
+  *ngIf="selectedSolicitacao"
+  [solicitacao]="selectedSolicitacao"
+  [mostrarDadosSolicitante]="false"
+  (fechar)="selectedSolicitacao = null">
+  <button class="btn-outline" (click)="selectedSolicitacao = null">Fechar</button>
+</app-solicitacao-detalhes>

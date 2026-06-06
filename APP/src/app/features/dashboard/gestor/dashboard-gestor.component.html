@@ -1,0 +1,325 @@
+<div class="dashboard-layout">
+  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()"></app-navbar-top>
+
+  <div class="dashboard-body">
+    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" (itemSelected)="setTab($event)"></app-navbar-lateral>
+
+    <main class="content-area">
+
+      <!-- ══ INÍCIO ══ -->
+      <div *ngIf="activeTab === 'inicio'" class="tab-content">
+        <div class="page-header">
+          <h2>Painel do Gestor</h2>
+          <p class="page-subtitle">Visão geral das solicitações sob sua gestão</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card stat-amber">
+            <mat-icon class="stat-icon">pending_actions</mat-icon>
+            <span class="stat-label">Ag. Aprovação</span>
+            <span class="stat-value">{{ totalStats.aguardandoAprovacao }}</span>
+          </div>
+          <div class="stat-card stat-teal">
+            <mat-icon class="stat-icon">sync</mat-icon>
+            <span class="stat-label">Em Andamento</span>
+            <span class="stat-value">{{ totalStats.emAndamento }}</span>
+          </div>
+          <div class="stat-card stat-green">
+            <mat-icon class="stat-icon">check_circle_outline</mat-icon>
+            <span class="stat-label">Finalizadas</span>
+            <span class="stat-value">{{ totalStats.finalizadas }}</span>
+          </div>
+          <div class="stat-card stat-red">
+            <mat-icon class="stat-icon">cancel</mat-icon>
+            <span class="stat-label">Rejeitadas</span>
+            <span class="stat-value">{{ totalStats.rejeitadas }}</span>
+          </div>
+          <div class="stat-card stat-orange">
+            <mat-icon class="stat-icon">alarm_off</mat-icon>
+            <span class="stat-label">Atrasadas</span>
+            <span class="stat-value">{{ totalStats.atrasadas }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ AGUARDANDO APROVAÇÃO ══ -->
+      <div *ngIf="activeTab === 'aprovacao'" class="tab-content">
+        <div class="page-header">
+          <h2>Aguardando Aprovação</h2>
+          <p class="page-subtitle">Solicitações submetidas pelos cidadãos para análise</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Data</th>
+                <th>Anonimato</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of aguardandoAprovacao">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <span class="badge-anonimo" *ngIf="s.anonimo">Anônimo</span>
+                  <span class="badge-identificado" *ngIf="!s.anonimo">Identificado</span>
+                </td>
+                <td class="acoes-col">
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!aguardandoAprovacao.length">
+                <td colspan="6" class="empty-row">Nenhuma solicitação aguardando aprovação.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ EM ANDAMENTO ══ -->
+      <div *ngIf="activeTab === 'andamento'" class="tab-content">
+        <div class="page-header">
+          <h2>Em Andamento</h2>
+          <p class="page-subtitle">Solicitações sendo atendidas</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Prioridade</th>
+                <th>Atendente</th>
+                <th>Prazo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of emAndamento" [class.row-atrasada]="s.atrasada">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
+                <td>{{ s.atendente?.nome ?? '—' }}</td>
+                <td [class.prazo-atrasado]="s.atrasada">
+                  {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
+                  <span *ngIf="s.atrasada" class="tag-atraso">Atrasada</span>
+                </td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!emAndamento.length">
+                <td colspan="7" class="empty-row">Nenhuma solicitação em andamento.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ MOVIMENTAÇÃO GERAL ══ -->
+      <div *ngIf="activeTab === 'movimentacao'" class="tab-content">
+        <div class="page-header section-header-row">
+          <div>
+            <h2>Movimentação Geral</h2>
+            <p class="page-subtitle">Todas as solicitações do sistema</p>
+          </div>
+          <div class="filtro-wrap">
+            <label>Filtrar por status:</label>
+            <select class="form-input form-select" [(ngModel)]="filtroStatus">
+              <option value="">Todos</option>
+              <option value="AGUARDANDO_APROVACAO">Ag. Aprovação</option>
+              <option value="APROVADA">Aprovada</option>
+              <option value="AGUARDANDO_ATENDENTE">Ag. Atendente</option>
+              <option value="EM_ANDAMENTO">Em Andamento</option>
+              <option value="FINALIZADA">Finalizada</option>
+              <option value="REJEITADA">Rejeitada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Status</th>
+                <th>Prioridade</th>
+                <th>Data</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of solicitacoesFiltradas" [class.row-atrasada]="s.atrasada">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td><app-status-badge [status]="s.status"></app-status-badge></td>
+                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
+                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!solicitacoesFiltradas.length">
+                <td colspan="7" class="empty-row">Nenhuma solicitação encontrada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ ATRASADAS ══ -->
+      <div *ngIf="activeTab === 'atrasadas'" class="tab-content">
+        <div class="page-header">
+          <h2>Solicitações Atrasadas</h2>
+          <p class="page-subtitle">Passaram do prazo e ainda não foram finalizadas</p>
+        </div>
+
+        <div class="alerta-banner" *ngIf="atrasadas.length">
+          <mat-icon>warning_amber</mat-icon>
+          <span>{{ atrasadas.length }} solicitação(ões) com prazo vencido!</span>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Prioridade</th>
+                <th>Prazo</th>
+                <th>Atendente</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of atrasadas" class="row-atrasada-hard">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
+                <td class="prazo-atrasado">{{ s.dataPrazo | date:'dd/MM/yyyy' }}</td>
+                <td>{{ s.atendente?.nome ?? 'Não atribuído' }}</td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!atrasadas.length">
+                <td colspan="7" class="empty-row good">Nenhuma solicitação atrasada!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ RECUSADAS ══ -->
+      <div *ngIf="activeTab === 'recusadas'" class="tab-content">
+        <div class="page-header">
+          <h2>Solicitações Recusadas</h2>
+          <p class="page-subtitle">Solicitações que não foram aprovadas</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Data</th>
+                <th>Motivo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of recusadas">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td class="motivo-col">{{ s.motivoRejeicao ?? '—' }}</td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!recusadas.length">
+                <td colspan="6" class="empty-row">Nenhuma solicitação recusada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ RELATÓRIO / GRÁFICO ══ -->
+      <div *ngIf="activeTab === 'relatorio'" class="tab-content">
+        <div class="page-header">
+          <h2>Relatório de Solicitações</h2>
+          <p class="page-subtitle">Distribuição atual por status</p>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-title">Solicitações por Status</h3>
+          <div class="chart-bars">
+            <div class="chart-bar-wrap" *ngFor="let item of chartData">
+              <div class="bar-value">{{ item.value }}</div>
+              <div class="bar-track">
+                <div class="bar-fill"
+                     [style.height.%]="chartMax > 0 ? (item.value / chartMax) * 100 : 0"
+                     [style.background]="item.color">
+                </div>
+              </div>
+              <div class="bar-label">{{ item.name }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid" style="margin-top: 1.5rem">
+          <div class="stat-card" *ngFor="let item of chartData">
+            <div class="stat-dot" [style.background]="item.color"></div>
+            <span class="stat-label">{{ item.name }}</span>
+            <span class="stat-value">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Drawer de detalhes -->
+<app-solicitacao-detalhes
+  *ngIf="selectedSolicitacao"
+  [solicitacao]="selectedSolicitacao"
+  [mostrarDadosSolicitante]="true"
+  (fechar)="selectedSolicitacao = null">
+  <button class="btn-success" (click)="onAprovar()" *ngIf="selectedSolicitacao?.status === 'AGUARDANDO_APROVACAO'">
+    <mat-icon>check</mat-icon> Aprovar
+  </button>
+  <button class="btn-danger" (click)="onRejeitar()" *ngIf="selectedSolicitacao?.status === 'AGUARDANDO_APROVACAO'">
+    <mat-icon>close</mat-icon> Rejeitar
+  </button>
+  <button class="btn-outline" (click)="selectedSolicitacao = null">Fechar</button>
+</app-solicitacao-detalhes>
