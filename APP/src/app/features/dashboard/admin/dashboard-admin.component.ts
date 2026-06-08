@@ -52,11 +52,13 @@ export class DashboardAdminComponent implements OnInit {
   carregandoLogs = false;
   filtroLog = '';
 
+  // TODO: mock — aguardando endpoint GET /solicitacoes
   solicitacoes: Solicitacao[] = MOCK_SOLICITACOES;
 
   usuarios: Usuario[] = [];
   carregandoUsuarios = false;
 
+  // TODO: mock — aguardando endpoint GET /categorias
   categorias: Categoria[] = MOCK_CATEGORIAS;
 
   selectedSolicitacao: Solicitacao | null = null;

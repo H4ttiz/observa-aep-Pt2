@@ -33,7 +33,7 @@ export class DashboardCidadaoComponent {
     { id: 'minhas',           icon: 'assignment',        label: 'Minhas Solicitações' }
   ];
 
-  // TODO: substituir mock por this.http.get<Solicitacao[]>('/api/solicitacoes/minhas')
+  // TODO: mock — aguardando endpoint GET /solicitacoes
   minhasSolicitacoes: Solicitacao[] = MOCK_SOLICITACOES.filter(s => !s.anonimo && s.solicitante?.nome === 'Carlos Mendes');
 
   selectedSolicitacao: Solicitacao | null = null;

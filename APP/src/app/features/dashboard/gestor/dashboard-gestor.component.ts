@@ -38,7 +38,7 @@ export class DashboardGestorComponent {
     { id: 'relatorio',     icon: 'bar_chart',         label: 'Relatório' }
   ];
 
-  // TODO: substituir mocks por this.http.get<Solicitacao[]>('/api/solicitacoes?status=...')
+  // TODO: mock — aguardando endpoint GET /solicitacoes
   aguardandoAprovacao: Solicitacao[] = MOCK_SOLICITACOES.filter(s => s.status === 'AGUARDANDO_APROVACAO');
   emAndamento:         Solicitacao[] = MOCK_SOLICITACOES.filter(s => s.status === 'EM_ANDAMENTO');
   todasSolicitacoes:   Solicitacao[] = MOCK_SOLICITACOES;

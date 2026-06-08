@@ -32,12 +32,12 @@ export class DashboardAtendenteComponent {
     { id: 'minhas',  icon: 'assignment',    label: 'Minhas Solicitações' }
   ];
 
-  // TODO: substituir mock por this.http.get<Solicitacao[]>('/api/solicitacoes/fila')
+  // TODO: mock — aguardando endpoint GET /solicitacoes
   filaAtendimento: Solicitacao[] = MOCK_SOLICITACOES.filter(s =>
     ['APROVADA', 'AGUARDANDO_ATENDENTE'].includes(s.status)
   );
 
-  // TODO: substituir mock por this.http.get<Solicitacao[]>('/api/solicitacoes/atendente')
+  // TODO: mock — aguardando endpoint GET /solicitacoes
   minhasSolicitacoes: Solicitacao[] = MOCK_SOLICITACOES.filter(s =>
     s.atendente?.nome === 'Mariana Costa' || s.atendente?.nome === 'João Pereira'
   );
