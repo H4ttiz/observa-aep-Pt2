@@ -119,7 +119,7 @@
       </div>
 
       <!-- ══ MINHAS SOLICITAÇÕES ══ -->
-      <div *ngIf="activeTab === 'minhas'" class="tab-content">
+      <div *ngIf="activeTab === 'minhas'" class="tab-content" id="minhas-section">
         <div class="page-header">
           <h2>Minhas Solicitações</h2>
           <p class="page-subtitle">Histórico e acompanhamento dos seus registros</p>
@@ -138,7 +138,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of minhasSolicitacoes">
+              <tr *ngFor="let s of minhasSolicitacoesExibidas">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
                 <td>{{ s.categoria }}</td>
@@ -155,6 +155,13 @@
               </tr>
             </tbody>
           </table>
+          <app-paginacao
+            [paginaAtual]="paginaMinhas"
+            [totalPaginas]="totalPaginasMinhas"
+            [primeiro]="primeiroMinhas"
+            [ultimo]="ultimoMinhas"
+            (paginaMudou)="onPaginaMinhasMudou($event)">
+          </app-paginacao>
         </div>
       </div>
 

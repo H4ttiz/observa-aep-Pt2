@@ -42,7 +42,7 @@
       </div>
 
       <!-- ══ FILA DE ATENDIMENTO ══ -->
-      <div *ngIf="activeTab === 'fila'" class="tab-content">
+      <div *ngIf="activeTab === 'fila'" class="tab-content" id="fila-section">
         <div class="page-header">
           <h2>Fila de Atendimento</h2>
           <p class="page-subtitle">Solicitações aprovadas aguardando atribuição</p>
@@ -61,7 +61,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of filaAtendimento">
+              <tr *ngFor="let s of filaExibida">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
                 <td>{{ s.categoria }}</td>
@@ -82,11 +82,18 @@
               </tr>
             </tbody>
           </table>
+          <app-paginacao
+            [paginaAtual]="paginaFila"
+            [totalPaginas]="totalPaginasFila"
+            [primeiro]="primeiroFila"
+            [ultimo]="ultimoFila"
+            (paginaMudou)="onPaginaFilaMudou($event)">
+          </app-paginacao>
         </div>
       </div>
 
       <!-- ══ MINHAS SOLICITAÇÕES ══ -->
-      <div *ngIf="activeTab === 'minhas'" class="tab-content">
+      <div *ngIf="activeTab === 'minhas'" class="tab-content" id="minhas-atendente-section">
         <div class="page-header">
           <h2>Minhas Solicitações</h2>
           <p class="page-subtitle">Casos que você assumiu</p>
@@ -106,7 +113,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of minhasSolicitacoes" [class.row-atrasada]="s.atrasada">
+              <tr *ngFor="let s of minhasExibidas" [class.row-atrasada]="s.atrasada">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
                 <td>{{ s.categoria }}</td>
@@ -127,6 +134,13 @@
               </tr>
             </tbody>
           </table>
+          <app-paginacao
+            [paginaAtual]="paginaMinhas"
+            [totalPaginas]="totalPaginasMinhas"
+            [primeiro]="primeiroMinhas"
+            [ultimo]="ultimoMinhas"
+            (paginaMudou)="onPaginaMinhasMudou($event)">
+          </app-paginacao>
         </div>
       </div>
 

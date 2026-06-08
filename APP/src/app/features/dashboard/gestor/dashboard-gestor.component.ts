@@ -9,6 +9,7 @@ import { NavbarTopComponent } from '../../../shared/components/navbar-top/navbar
 import { NavbarLateralComponent, NavItem } from '../../../shared/components/navbar-lateral/navbar-lateral.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { SolicitacaoDetalhesComponent } from '../../../shared/components/solicitacao-detalhes/solicitacao-detalhes.component';
+import { PaginacaoComponent } from '../../../shared/components/paginacao/paginacao.component';
 import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
 
 @Component({
@@ -18,7 +19,7 @@ import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
     NgIf, NgFor, NgClass, DatePipe, FormsModule,
     MatIconModule, MatButtonModule,
     NavbarTopComponent, NavbarLateralComponent,
-    StatusBadgeComponent, SolicitacaoDetalhesComponent
+    StatusBadgeComponent, SolicitacaoDetalhesComponent, PaginacaoComponent
   ],
   templateUrl: './dashboard-gestor.component.html',
   styleUrl: './dashboard-gestor.component.scss'
@@ -46,6 +47,36 @@ export class DashboardGestorComponent {
   recusadas:           Solicitacao[] = MOCK_SOLICITACOES.filter(s => s.status === 'REJEITADA');
 
   selectedSolicitacao: Solicitacao | null = null;
+
+  // Paginação — estado único por tab (reseta ao trocar de aba ou filtro)
+  readonly pageSizeSolicits = 20;
+  paginaSolicits = 0;
+
+  private get listaAtiva(): Solicitacao[] {
+    switch (this.activeTab) {
+      case 'aprovacao':    return this.aguardandoAprovacao;
+      case 'andamento':    return this.emAndamento;
+      case 'movimentacao': return this.solicitacoesFiltradas;
+      case 'atrasadas':    return this.atrasadas;
+      case 'recusadas':    return this.recusadas;
+      default:             return [];
+    }
+  }
+
+  private paginar(lista: Solicitacao[]): Solicitacao[] {
+    const start = this.paginaSolicits * this.pageSizeSolicits;
+    return lista.slice(start, start + this.pageSizeSolicits);
+  }
+
+  get totalPaginasSolicits(): number { return Math.ceil(this.listaAtiva.length / this.pageSizeSolicits) || 1; }
+  get primeiroSolicits(): boolean    { return this.paginaSolicits === 0; }
+  get ultimoSolicits(): boolean      { return this.paginaSolicits >= this.totalPaginasSolicits - 1; }
+
+  get aguardandoAprovacaoExibidos(): Solicitacao[] { return this.paginar(this.aguardandoAprovacao); }
+  get emAndamentoExibidos(): Solicitacao[]         { return this.paginar(this.emAndamento); }
+  get solicitacoesFiltradasExibidas(): Solicitacao[] { return this.paginar(this.solicitacoesFiltradas); }
+  get atrasadasExibidas(): Solicitacao[]           { return this.paginar(this.atrasadas); }
+  get recusadasExibidas(): Solicitacao[]           { return this.paginar(this.recusadas); }
 
   get statusOptions(): string[] {
     return ['', 'AGUARDANDO_APROVACAO', 'APROVADA', 'AGUARDANDO_ATENDENTE', 'EM_ANDAMENTO', 'FINALIZADA', 'REJEITADA'];
@@ -87,8 +118,19 @@ export class DashboardGestorComponent {
 
   constructor(private auth: AuthService) {}
 
-  setTab(id: string): void { this.activeTab = id; }
+  setTab(id: string): void {
+    this.activeTab = id;
+    this.paginaSolicits = 0;
+  }
+
   verDetalhes(s: Solicitacao): void { this.selectedSolicitacao = s; }
+
+  onFiltroStatusChange(): void { this.paginaSolicits = 0; }
+
+  onPaginaSolicitsMudou(pagina: number): void {
+    this.paginaSolicits = pagina;
+    document.querySelector('.content-area')?.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   onAprovar():  void { alert('Em breve: integração com o backend'); }
   onRejeitar(): void { alert('Em breve: integração com o backend'); }
