@@ -1,7 +1,7 @@
 export interface Log {
   id: number;
   tipoLog: string;
-  usuario: string;
+  nomeUsuario: string;
   descricao: string;
-  dataHora: string;
+  dataCriacao: string;
 }

@@ -225,14 +225,14 @@ export const MOCK_CATEGORIAS: Categoria[] = [
 ];
 
 export const MOCK_LOGS: Log[] = [
-  { id: 1, tipoLog: 'LOGIN', usuario: 'admin@prefeitura.gov.br', descricao: 'Login realizado com sucesso.', dataHora: '2026-06-05T08:02:11' },
-  { id: 2, tipoLog: 'CRIACAO', usuario: 'carlos@email.com', descricao: 'Nova solicitação #1001 criada: "Buraco na Rua das Palmeiras".', dataHora: '2026-05-10T10:22:00' },
-  { id: 3, tipoLog: 'ALTERACAO', usuario: 'fernando.gestor@prefeitura.gov.br', descricao: 'Solicitação #1002 aprovada com prioridade MÉDIA.', dataHora: '2026-05-13T14:30:00' },
-  { id: 4, tipoLog: 'ALTERACAO', usuario: 'mariana.atendente@prefeitura.gov.br', descricao: 'Solicitação #1004 assumida — status alterado para EM_ANDAMENTO.', dataHora: '2026-05-02T14:00:00' },
-  { id: 5, tipoLog: 'ALTERACAO', usuario: 'fernando.gestor@prefeitura.gov.br', descricao: 'Solicitação #1006 rejeitada: fora da competência municipal.', dataHora: '2026-05-02T11:00:00' },
-  { id: 6, tipoLog: 'ACESSO_NEGADO', usuario: 'carlos@email.com', descricao: 'Tentativa de acesso não autorizado à rota /dashboard/admin.', dataHora: '2026-05-10T11:00:00' },
-  { id: 7, tipoLog: 'CRIACAO', usuario: 'admin@prefeitura.gov.br', descricao: 'Novo usuário criado: joao.atendente@prefeitura.gov.br (ATENDENTE).', dataHora: '2025-03-10T09:00:00' },
-  { id: 8, tipoLog: 'EXCLUSAO', usuario: 'admin@prefeitura.gov.br', descricao: 'Categoria #6 (Saneamento) desativada.', dataHora: '2026-04-01T15:30:00' },
-  { id: 9, tipoLog: 'ALTERACAO', usuario: 'mariana.atendente@prefeitura.gov.br', descricao: 'Solicitação #1005 finalizada com sucesso.', dataHora: '2026-05-10T16:30:00' },
-  { id: 10, tipoLog: 'LOGIN', usuario: 'joao.atendente@prefeitura.gov.br', descricao: 'Login realizado com sucesso.', dataHora: '2026-06-05T07:45:00' }
+  { id: 1, tipoLog: 'LOGIN', nomeUsuario: 'Admin Geral', descricao: 'Login realizado com sucesso.', dataCriacao: '2026-06-05T08:02:11' },
+  { id: 2, tipoLog: 'CRIACAO', nomeUsuario: 'Carlos Mendes', descricao: 'Nova solicitação #1001 criada: "Buraco na Rua das Palmeiras".', dataCriacao: '2026-05-10T10:22:00' },
+  { id: 3, tipoLog: 'ALTERACAO', nomeUsuario: 'Fernando Lima', descricao: 'Solicitação #1002 aprovada com prioridade MÉDIA.', dataCriacao: '2026-05-13T14:30:00' },
+  { id: 4, tipoLog: 'ALTERACAO', nomeUsuario: 'Mariana Costa', descricao: 'Solicitação #1004 assumida — status alterado para EM_ANDAMENTO.', dataCriacao: '2026-05-02T14:00:00' },
+  { id: 5, tipoLog: 'ALTERACAO', nomeUsuario: 'Fernando Lima', descricao: 'Solicitação #1006 rejeitada: fora da competência municipal.', dataCriacao: '2026-05-02T11:00:00' },
+  { id: 6, tipoLog: 'ACESSO_NEGADO', nomeUsuario: 'Carlos Mendes', descricao: 'Tentativa de acesso não autorizado à rota /dashboard/admin.', dataCriacao: '2026-05-10T11:00:00' },
+  { id: 7, tipoLog: 'CRIACAO', nomeUsuario: 'Admin Geral', descricao: 'Novo usuário criado: joao.atendente@prefeitura.gov.br (ATENDENTE).', dataCriacao: '2025-03-10T09:00:00' },
+  { id: 8, tipoLog: 'EXCLUSAO', nomeUsuario: 'Admin Geral', descricao: 'Categoria #6 (Saneamento) desativada.', dataCriacao: '2026-04-01T15:30:00' },
+  { id: 9, tipoLog: 'ALTERACAO', nomeUsuario: 'Mariana Costa', descricao: 'Solicitação #1005 finalizada com sucesso.', dataCriacao: '2026-05-10T16:30:00' },
+  { id: 10, tipoLog: 'LOGIN', nomeUsuario: 'João Pereira', descricao: 'Login realizado com sucesso.', dataCriacao: '2026-06-05T07:45:00' }
 ];

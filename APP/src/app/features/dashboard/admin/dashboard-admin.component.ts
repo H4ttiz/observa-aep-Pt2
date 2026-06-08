@@ -18,7 +18,8 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 import { SolicitacaoDetalhesComponent } from '../../../shared/components/solicitacao-detalhes/solicitacao-detalhes.component';
 import { PasswordInputComponent } from '../../../shared/components/password-input/password-input.component';
 import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
-import { MOCK_SOLICITACOES, MOCK_CATEGORIAS, MOCK_LOGS } from '../../../shared/mock-data/mock-data';
+import { LogService } from '../../../core/services/log.service';
+import { MOCK_SOLICITACOES, MOCK_CATEGORIAS } from '../../../shared/mock-data/mock-data';
 
 @Component({
   selector: 'app-dashboard-admin',
@@ -47,7 +48,8 @@ export class DashboardAdminComponent implements OnInit {
     { id: 'categorias',   icon: 'sell',              label: 'Categorias' }
   ];
 
-  logs: Log[] = MOCK_LOGS;
+  logs: Log[] = [];
+  carregandoLogs = false;
   filtroLog = '';
 
   solicitacoes: Solicitacao[] = MOCK_SOLICITACOES;
@@ -75,10 +77,7 @@ export class DashboardAdminComponent implements OnInit {
   };
   novaCategoria = { nome: '', descricao: '' };
 
-  get logsExibidos(): Log[] {
-    if (!this.filtroLog) return this.logs;
-    return this.logs.filter(l => l.tipoLog === this.filtroLog);
-  }
+  get logsExibidos(): Log[] { return this.logs; }
 
   get stats() {
     return {
@@ -91,6 +90,7 @@ export class DashboardAdminComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private usuarioService: UsuarioService,
+    private logService: LogService,
     private toast: ToastService,
     private router: Router,
     private route: ActivatedRoute
@@ -105,7 +105,23 @@ export class DashboardAdminComponent implements OnInit {
   setTab(id: string): void {
     this.activeTab = id;
     if (id === 'usuarios') this.carregarUsuarios();
+    if (id === 'logs')     this.carregarLogs();
   }
+
+  // ── Logs ──────────────────────────────────────────────────────────────────
+
+  carregarLogs(): void {
+    this.carregandoLogs = true;
+    const obs = this.filtroLog
+      ? this.logService.listarPorTipo(this.filtroLog)
+      : this.logService.listarTodos();
+    obs.subscribe({
+      next: lista => { this.logs = lista; this.carregandoLogs = false; },
+      error: ()   => { this.toast.error('Erro ao carregar logs'); this.carregandoLogs = false; }
+    });
+  }
+
+  onFiltroLogChange(): void { this.carregarLogs(); }
 
   verDetalhes(s: Solicitacao): void { this.selectedSolicitacao = s; }
 

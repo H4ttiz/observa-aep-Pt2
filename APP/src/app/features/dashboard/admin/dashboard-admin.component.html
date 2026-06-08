@@ -50,7 +50,7 @@
           </div>
           <div class="filtro-wrap">
             <label>Filtrar:</label>
-            <select class="form-input form-select" [(ngModel)]="filtroLog">
+            <select class="form-input form-select" [(ngModel)]="filtroLog" (ngModelChange)="onFiltroLogChange()">
               <option value="">Todos</option>
               <option value="CRIACAO">Criação</option>
               <option value="ALTERACAO">Alteração</option>
@@ -61,13 +61,17 @@
           </div>
         </div>
 
-        <div class="table-card">
+        <div *ngIf="carregandoLogs" class="empty-row" style="text-align:center;padding:2rem">
+          Carregando...
+        </div>
+
+        <div class="table-card" *ngIf="!carregandoLogs">
           <table class="data-table">
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Tipo</th>
-                <th>Usuário</th>
+                <th>Responsável</th>
                 <th>Descrição</th>
                 <th>Data/Hora</th>
               </tr>
@@ -76,9 +80,9 @@
               <tr *ngFor="let log of logsExibidos">
                 <td class="col-id">#{{ log.id }}</td>
                 <td><app-status-badge [tipoLog]="log.tipoLog"></app-status-badge></td>
-                <td class="col-email">{{ log.usuario }}</td>
+                <td class="col-email">{{ log.nomeUsuario }}</td>
                 <td class="col-desc">{{ log.descricao }}</td>
-                <td class="col-date">{{ log.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="col-date">{{ log.dataCriacao | date:'dd/MM/yyyy HH:mm:ss' }}</td>
               </tr>
               <tr *ngIf="!logsExibidos.length">
                 <td colspan="5" class="empty-row">Nenhum log encontrado.</td>
