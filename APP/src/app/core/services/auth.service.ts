@@ -51,7 +51,8 @@ export class AuthService {
     const refreshToken = localStorage.getItem(REFRESH_KEY);
     if (refreshToken) {
       this.http.post(`${this.apiUrl}/logout`, { refreshToken }).subscribe({
-        complete: () => this.limparSessao()
+        complete: () => this.limparSessao(),
+        error:    () => this.limparSessao()
       });
     } else {
       this.limparSessao();
@@ -93,7 +94,7 @@ export class AuthService {
     return !!localStorage.getItem(TOKEN_KEY);
   }
 
-  private limparSessao(): void {
+  limparSessao(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(TIPO_KEY);
