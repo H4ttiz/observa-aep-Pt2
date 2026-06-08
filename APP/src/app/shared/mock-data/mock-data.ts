@@ -1,9 +1,5 @@
 import { Solicitacao } from '../../core/models/solicitacao.model';
-import { Usuario } from '../../core/models/usuario.model';
 import { Categoria } from '../../core/models/categoria.model';
-import { Log } from '../../core/models/log.model';
-
-// TODO: substituir mock por chamadas HTTP aos endpoints reais
 
 export const MOCK_SOLICITACOES: Solicitacao[] = [
   {
@@ -202,16 +198,6 @@ export const MOCK_SOLICITACOES: Solicitacao[] = [
   }
 ];
 
-export const MOCK_USUARIOS: Usuario[] = [
-  { id: 1, nome: 'Admin Geral', email: 'admin@prefeitura.gov.br', tipoUsuario: 'ADMINISTRADOR', ativo: true, dataCriacao: '2025-01-01' },
-  { id: 2, nome: 'Fernando Lima', email: 'fernando.gestor@prefeitura.gov.br', tipoUsuario: 'GESTOR', ativo: true, dataCriacao: '2025-01-15' },
-  { id: 3, nome: 'Mariana Costa', email: 'mariana.atendente@prefeitura.gov.br', tipoUsuario: 'ATENDENTE', ativo: true, dataCriacao: '2025-02-01' },
-  { id: 4, nome: 'João Pereira', email: 'joao.atendente@prefeitura.gov.br', tipoUsuario: 'ATENDENTE', ativo: true, dataCriacao: '2025-03-10' },
-  { id: 5, nome: 'Carlos Mendes', email: 'carlos@email.com', tipoUsuario: 'CIDADAO', ativo: true, dataCriacao: '2025-04-05' },
-  { id: 6, nome: 'Ana Souza', email: 'ana@email.com', tipoUsuario: 'CIDADAO', ativo: true, dataCriacao: '2025-04-20' },
-  { id: 7, nome: 'Beatriz Santos', email: 'beatriz@email.com', tipoUsuario: 'CIDADAO', ativo: false, dataCriacao: '2025-05-01' }
-];
-
 export const MOCK_CATEGORIAS: Categoria[] = [
   { id: 1, nome: 'Infraestrutura', descricao: 'Buracos, calçadas, pontes e obras em geral', ativa: true },
   { id: 2, nome: 'Iluminação Pública', descricao: 'Postes apagados e problemas de iluminação', ativa: true },
@@ -224,15 +210,3 @@ export const MOCK_CATEGORIAS: Categoria[] = [
   { id: 9, nome: 'Parques e Lazer', descricao: 'Parques, playgrounds e áreas de esporte', ativa: true }
 ];
 
-export const MOCK_LOGS: Log[] = [
-  { id: 1, tipoLog: 'LOGIN', nomeUsuario: 'Admin Geral', descricao: 'Login realizado com sucesso.', dataCriacao: '2026-06-05T08:02:11' },
-  { id: 2, tipoLog: 'CRIACAO', nomeUsuario: 'Carlos Mendes', descricao: 'Nova solicitação #1001 criada: "Buraco na Rua das Palmeiras".', dataCriacao: '2026-05-10T10:22:00' },
-  { id: 3, tipoLog: 'ALTERACAO', nomeUsuario: 'Fernando Lima', descricao: 'Solicitação #1002 aprovada com prioridade MÉDIA.', dataCriacao: '2026-05-13T14:30:00' },
-  { id: 4, tipoLog: 'ALTERACAO', nomeUsuario: 'Mariana Costa', descricao: 'Solicitação #1004 assumida — status alterado para EM_ANDAMENTO.', dataCriacao: '2026-05-02T14:00:00' },
-  { id: 5, tipoLog: 'ALTERACAO', nomeUsuario: 'Fernando Lima', descricao: 'Solicitação #1006 rejeitada: fora da competência municipal.', dataCriacao: '2026-05-02T11:00:00' },
-  { id: 6, tipoLog: 'ACESSO_NEGADO', nomeUsuario: 'Carlos Mendes', descricao: 'Tentativa de acesso não autorizado à rota /dashboard/admin.', dataCriacao: '2026-05-10T11:00:00' },
-  { id: 7, tipoLog: 'CRIACAO', nomeUsuario: 'Admin Geral', descricao: 'Novo usuário criado: joao.atendente@prefeitura.gov.br (ATENDENTE).', dataCriacao: '2025-03-10T09:00:00' },
-  { id: 8, tipoLog: 'EXCLUSAO', nomeUsuario: 'Admin Geral', descricao: 'Categoria #6 (Saneamento) desativada.', dataCriacao: '2026-04-01T15:30:00' },
-  { id: 9, tipoLog: 'ALTERACAO', nomeUsuario: 'Mariana Costa', descricao: 'Solicitação #1005 finalizada com sucesso.', dataCriacao: '2026-05-10T16:30:00' },
-  { id: 10, tipoLog: 'LOGIN', nomeUsuario: 'João Pereira', descricao: 'Login realizado com sucesso.', dataCriacao: '2026-06-05T07:45:00' }
-];
