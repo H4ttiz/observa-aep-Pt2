@@ -23,11 +23,9 @@ export class NavbarTopComponent {
   constructor(private auth: AuthService) {}
 
   get iniciais(): string {
-    return this.nomeUsuario
-      .split(' ')
-      .slice(0, 2)
-      .map(p => p[0])
-      .join('')
-      .toUpperCase();
+    const partes = this.nomeUsuario.trim().split(' ');
+    const primeira = partes[0]?.[0] ?? '';
+    const segunda  = partes[1]?.[0] ?? '';
+    return (primeira + segunda).toUpperCase();
   }
 }

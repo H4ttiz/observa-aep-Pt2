@@ -14,20 +14,20 @@
     </button>
 
     <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-btn" aria-label="Menu do usuário">
-      <ng-container *ngIf="fotoPerfil$ | async as foto; else iniciais">
+      <ng-container *ngIf="fotoPerfil$ | async as foto; else semFoto">
         <img [src]="foto" class="avatar avatar-img" alt="Foto de perfil" />
       </ng-container>
-      <ng-template #iniciais>
+      <ng-template #semFoto>
         <div class="avatar">{{ iniciais }}</div>
       </ng-template>
     </button>
 
     <mat-menu #userMenu="matMenu" xPosition="before" class="user-menu">
       <div class="menu-header">
-        <ng-container *ngIf="fotoPerfil$ | async as foto; else menuIniciais">
+        <ng-container *ngIf="fotoPerfil$ | async as foto; else menuSemFoto">
           <img [src]="foto" class="menu-avatar menu-avatar-img" alt="Foto de perfil" />
         </ng-container>
-        <ng-template #menuIniciais>
+        <ng-template #menuSemFoto>
           <div class="menu-avatar">{{ iniciais }}</div>
         </ng-template>
         <span class="menu-nome">{{ nomeUsuario }}</span>
