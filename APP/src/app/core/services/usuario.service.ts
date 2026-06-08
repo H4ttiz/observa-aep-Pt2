@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Usuario, UsuarioRequest, UsuarioUpdateRequest, UsuarioSelfUpdateRequest } from '../models/usuario.model';
+import { PageResponse } from '../models/page-response.model';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -11,8 +12,12 @@ export class UsuarioService {
 
   constructor(private http: HttpClient) {}
 
-  listarTodos(): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(this.apiUrl);
+  listarTodos(page = 0, size = 20): Observable<PageResponse<Usuario>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size)
+      .set('sort', 'nome,asc');
+    return this.http.get<PageResponse<Usuario>>(this.apiUrl, { params });
   }
 
   buscarPorId(id: number): Observable<Usuario> {

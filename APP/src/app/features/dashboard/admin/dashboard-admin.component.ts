@@ -18,6 +18,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 import { SolicitacaoDetalhesComponent } from '../../../shared/components/solicitacao-detalhes/solicitacao-detalhes.component';
 import { PasswordInputComponent } from '../../../shared/components/password-input/password-input.component';
 import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
+import { PaginacaoComponent } from '../../../shared/components/paginacao/paginacao.component';
 import { LogService } from '../../../core/services/log.service';
 import { MOCK_SOLICITACOES, MOCK_CATEGORIAS } from '../../../shared/mock-data/mock-data';
 
@@ -29,7 +30,7 @@ import { MOCK_SOLICITACOES, MOCK_CATEGORIAS } from '../../../shared/mock-data/mo
     MatIconModule, MatButtonModule, MatTooltipModule,
     NavbarTopComponent, NavbarLateralComponent,
     StatusBadgeComponent, SolicitacaoDetalhesComponent,
-    PasswordInputComponent, FieldErrorComponent
+    PasswordInputComponent, FieldErrorComponent, PaginacaoComponent
   ],
   templateUrl: './dashboard-admin.component.html',
   styleUrl: './dashboard-admin.component.scss'
@@ -48,16 +49,30 @@ export class DashboardAdminComponent implements OnInit {
     { id: 'categorias',   icon: 'sell',              label: 'Categorias' }
   ];
 
+  // ── Logs ──────────────────────────────────────────────────────────────────
   logs: Log[] = [];
   carregandoLogs = false;
   filtroLog = '';
+  paginaAtualLogs = 0;
+  totalPaginasLogs = 0;
+  primeiroLogs = true;
+  ultimoLogs = false;
+  totalElementosLogs = 0;
 
+  // ── Usuários ──────────────────────────────────────────────────────────────
+  usuarios: Usuario[] = [];
+  carregandoUsuarios = false;
+  paginaAtualUsuarios = 0;
+  totalPaginasUsuarios = 0;
+  primeiroUsuarios = true;
+  ultimoUsuarios = false;
+  totalElementosUsuarios = 0;
+
+  // ── Solicitações (mock — aguardando endpoint GET /solicitacoes) ────────────
   // TODO: mock — aguardando endpoint GET /solicitacoes
   solicitacoes: Solicitacao[] = MOCK_SOLICITACOES;
 
-  usuarios: Usuario[] = [];
-  carregandoUsuarios = false;
-
+  // ── Categorias (mock — aguardando endpoint GET /categorias) ───────────────
   // TODO: mock — aguardando endpoint GET /categorias
   categorias: Categoria[] = MOCK_CATEGORIAS;
 
@@ -83,7 +98,7 @@ export class DashboardAdminComponent implements OnInit {
 
   get stats() {
     return {
-      usuarios:     this.usuarios.length,
+      usuarios:     this.totalElementosUsuarios,
       solicitacoes: this.solicitacoes.length,
       categorias:   this.categorias.filter(c => c.ativa).length
     };
@@ -102,46 +117,72 @@ export class DashboardAdminComponent implements OnInit {
     const tab = this.route.snapshot.queryParamMap.get('tab');
     if (tab) this.activeTab = tab;
     this.carregarUsuarios();
+    if (this.activeTab === 'logs') this.carregarLogs();
   }
 
   setTab(id: string): void {
     this.activeTab = id;
-    if (id === 'usuarios') this.carregarUsuarios();
-    if (id === 'logs')     this.carregarLogs();
+    if (id === 'usuarios') this.carregarUsuarios(0);
+    if (id === 'logs')     this.carregarLogs(0);
   }
 
   // ── Logs ──────────────────────────────────────────────────────────────────
 
-  carregarLogs(): void {
+  carregarLogs(pagina = 0): void {
     this.carregandoLogs = true;
     const obs = this.filtroLog
-      ? this.logService.listarPorTipo(this.filtroLog)
-      : this.logService.listarTodos();
+      ? this.logService.listarPorTipo(this.filtroLog, pagina)
+      : this.logService.listarTodos(pagina);
     obs.subscribe({
-      next: lista => { this.logs = lista; this.carregandoLogs = false; },
-      error: ()   => { this.toast.error('Erro ao carregar logs'); this.carregandoLogs = false; }
+      next: res => {
+        this.logs = res.content;
+        this.paginaAtualLogs = res.number;
+        this.totalPaginasLogs = res.totalPages;
+        this.primeiroLogs = res.first;
+        this.ultimoLogs = res.last;
+        this.totalElementosLogs = res.totalElements;
+        this.carregandoLogs = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar logs'); this.carregandoLogs = false; }
     });
   }
 
-  onFiltroLogChange(): void { this.carregarLogs(); }
+  onFiltroLogChange(): void { this.carregarLogs(0); }
+
+  onPaginaLogsMudou(pagina: number): void {
+    this.carregarLogs(pagina);
+    document.getElementById('logs-tab')?.scrollIntoView({ behavior: 'smooth' });
+  }
 
   verDetalhes(s: Solicitacao): void { this.selectedSolicitacao = s; }
 
-  // ── Usuários ─────────────────────────────────────────────────────────────
+  // ── Usuários ──────────────────────────────────────────────────────────────
 
-  carregarUsuarios(): void {
+  carregarUsuarios(pagina = 0): void {
     this.carregandoUsuarios = true;
-    this.usuarioService.listarTodos().subscribe({
-      next: lista => { this.usuarios = lista; this.carregandoUsuarios = false; },
-      error: err  => {
+    this.usuarioService.listarTodos(pagina).subscribe({
+      next: res => {
+        this.usuarios = res.content;
+        this.paginaAtualUsuarios = res.number;
+        this.totalPaginasUsuarios = res.totalPages;
+        this.primeiroUsuarios = res.first;
+        this.ultimoUsuarios = res.last;
+        this.totalElementosUsuarios = res.totalElements;
+        this.carregandoUsuarios = false;
+      },
+      error: err => {
         this.toast.error(err.error?.erro ?? 'Erro ao carregar usuários');
         this.carregandoUsuarios = false;
       }
     });
   }
 
+  onPaginaUsuariosMudou(pagina: number): void {
+    this.carregarUsuarios(pagina);
+    document.getElementById('usuarios-tab')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   podeModificar(u: Usuario): boolean {
-    // ADM raiz (criadoPorId null) ou criado por outro ADM → false
     return u.criadoPorId != null && u.criadoPorId === this.loggedUserId;
   }
 
@@ -162,7 +203,7 @@ export class DashboardAdminComponent implements OnInit {
       next: () => {
         this.showModalUsuario = false;
         this.toast.success('Usuário criado com sucesso!');
-        this.carregarUsuarios();
+        this.carregarUsuarios(0);
       },
       error: err => this.toast.error(err.error?.erro ?? 'Erro ao criar usuário')
     });
@@ -179,7 +220,7 @@ export class DashboardAdminComponent implements OnInit {
       next: () => {
         this.showModalConfirmDesativar = false;
         this.toast.success('Usuário desativado.');
-        this.carregarUsuarios();
+        this.carregarUsuarios(this.paginaAtualUsuarios);
       },
       error: err => this.toast.error(err.error?.erro ?? 'Erro ao desativar usuário')
     });
@@ -187,7 +228,7 @@ export class DashboardAdminComponent implements OnInit {
 
   onAtivar(u: Usuario): void {
     this.usuarioService.ativar(u.id).subscribe({
-      next: () => { this.toast.success('Usuário ativado.'); this.carregarUsuarios(); },
+      next: () => { this.toast.success('Usuário ativado.'); this.carregarUsuarios(this.paginaAtualUsuarios); },
       error: err => this.toast.error(err.error?.erro ?? 'Erro ao ativar usuário')
     });
   }
@@ -203,7 +244,7 @@ export class DashboardAdminComponent implements OnInit {
       next: () => {
         this.showModalConfirmDelete = false;
         this.toast.success('Usuário excluído permanentemente.');
-        this.carregarUsuarios();
+        this.carregarUsuarios(0);
       },
       error: err => this.toast.error(err.error?.erro ?? 'Erro ao excluir usuário')
     });

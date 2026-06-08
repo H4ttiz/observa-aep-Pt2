@@ -42,7 +42,7 @@
       </div>
 
       <!-- ══ LOGS DO SISTEMA ══ -->
-      <div *ngIf="activeTab === 'logs'" class="tab-content">
+      <div *ngIf="activeTab === 'logs'" class="tab-content" id="logs-tab">
         <div class="page-header section-header-row">
           <div>
             <h2>Logs do Sistema</h2>
@@ -89,6 +89,13 @@
               </tr>
             </tbody>
           </table>
+          <app-paginacao
+            [paginaAtual]="paginaAtualLogs"
+            [totalPaginas]="totalPaginasLogs"
+            [primeiro]="primeiroLogs"
+            [ultimo]="ultimoLogs"
+            (paginaMudou)="onPaginaLogsMudou($event)">
+          </app-paginacao>
         </div>
       </div>
 
@@ -137,11 +144,11 @@
       </div>
 
       <!-- ══ USUÁRIOS ══ -->
-      <div *ngIf="activeTab === 'usuarios'" class="tab-content">
+      <div *ngIf="activeTab === 'usuarios'" class="tab-content" id="usuarios-tab">
         <div class="page-header section-header-row">
           <div>
             <h2>Gestão de Usuários</h2>
-            <p class="page-subtitle">{{ usuarios.length }} usuários cadastrados</p>
+            <p class="page-subtitle">{{ totalElementosUsuarios }} usuários cadastrados</p>
           </div>
           <button class="btn-primary" (click)="onAbrirModalUsuario()">
             <mat-icon>person_add</mat-icon> Criar Usuário
@@ -208,6 +215,13 @@
               </tr>
             </tbody>
           </table>
+          <app-paginacao
+            [paginaAtual]="paginaAtualUsuarios"
+            [totalPaginas]="totalPaginasUsuarios"
+            [primeiro]="primeiroUsuarios"
+            [ultimo]="ultimoUsuarios"
+            (paginaMudou)="onPaginaUsuariosMudou($event)">
+          </app-paginacao>
         </div>
       </div>
 
