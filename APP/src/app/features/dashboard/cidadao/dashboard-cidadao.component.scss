@@ -1,0 +1,22 @@
+@use '../../../shared/styles/dashboard' as d;
+
+.dashboard-layout { @include d.layout; }
+.dashboard-body   { @include d.body; }
+.content-area     { @include d.content-area; }
+.tab-content      { @include d.tab-content; }
+.page-header      { @include d.page-header; }
+.table-card       { @include d.table-card; }
+.data-table       { @include d.data-table; }
+.btn-primary      { @include d.btn-primary; }
+.btn-outline      { @include d.btn-outline; }
+.btn-link         { @include d.btn-link; }
+.form-card        { @include d.form-card; }
+.form-group       { @include d.form-group; }
+.form-input       { @include d.form-input; }
+.form-select      { @include d.form-select; }
+.form-textarea    { @include d.form-textarea; }
+.form-row         { @include d.form-row; }
+.cards-grid       { @include d.cards-grid; }
+.info-card        { @include d.info-card; }
+.info-banner      { @include d.info-banner; }
+.anonimo-toggle   { @include d.anonimo-toggle; }

@@ -1,0 +1,161 @@
+<div class="dashboard-layout">
+  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()"></app-navbar-top>
+
+  <div class="dashboard-body">
+    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" (itemSelected)="setTab($event)"></app-navbar-lateral>
+
+    <main class="content-area">
+
+      <!-- ══ INÍCIO ══ -->
+      <div *ngIf="activeTab === 'inicio'" class="tab-content">
+        <div class="page-header">
+          <h2>Bem-vindo, <strong>{{ nome }}</strong>!</h2>
+          <p class="page-subtitle">Painel do Atendente — Prefeitura de Maringá</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <mat-icon class="stat-icon">inbox</mat-icon>
+            <span class="stat-label">Aguardando Atendimento</span>
+            <span class="stat-value">{{ totalAguardando }}</span>
+          </div>
+          <div class="stat-card">
+            <mat-icon class="stat-icon">pending_actions</mat-icon>
+            <span class="stat-label">Em Andamento</span>
+            <span class="stat-value">{{ totalEmAndamento }}</span>
+          </div>
+          <div class="stat-card">
+            <mat-icon class="stat-icon">check_circle_outline</mat-icon>
+            <span class="stat-label">Finalizadas</span>
+            <span class="stat-value">{{ totalFinalizadas }}</span>
+          </div>
+        </div>
+
+        <div class="info-banner">
+          <mat-icon>info_outline</mat-icon>
+          <p>
+            Acesse a <strong>Fila de Atendimento</strong> para visualizar solicitações aprovadas pelo gestor
+            e aguardando um atendente. Em <strong>Minhas Solicitações</strong> você acompanha os casos
+            que já assumiu.
+          </p>
+        </div>
+      </div>
+
+      <!-- ══ FILA DE ATENDIMENTO ══ -->
+      <div *ngIf="activeTab === 'fila'" class="tab-content" id="fila-section">
+        <div class="page-header">
+          <h2>Fila de Atendimento</h2>
+          <p class="page-subtitle">Solicitações aprovadas aguardando atribuição</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Prioridade</th>
+                <th>Prazo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of filaExibida">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td>
+                  <app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge>
+                </td>
+                <td [class.prazo-atrasado]="s.atrasada">
+                  {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
+                </td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver Detalhes
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!filaAtendimento.length">
+                <td colspan="6" class="empty-row">Nenhuma solicitação na fila.</td>
+              </tr>
+            </tbody>
+          </table>
+          <app-paginacao
+            [paginaAtual]="paginaFila"
+            [totalPaginas]="totalPaginasFila"
+            [primeiro]="primeiroFila"
+            [ultimo]="ultimoFila"
+            (paginaMudou)="onPaginaFilaMudou($event)">
+          </app-paginacao>
+        </div>
+      </div>
+
+      <!-- ══ MINHAS SOLICITAÇÕES ══ -->
+      <div *ngIf="activeTab === 'minhas'" class="tab-content" id="minhas-atendente-section">
+        <div class="page-header">
+          <h2>Minhas Solicitações</h2>
+          <p class="page-subtitle">Casos que você assumiu</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Prioridade</th>
+                <th>Status</th>
+                <th>Prazo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of minhasExibidas" [class.row-atrasada]="s.atrasada">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
+                <td><app-status-badge [status]="s.status"></app-status-badge></td>
+                <td [class.prazo-atrasado]="s.atrasada">
+                  {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
+                  <span *ngIf="s.atrasada" class="tag-atraso">Atrasada</span>
+                </td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver Detalhes
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!minhasSolicitacoes.length">
+                <td colspan="7" class="empty-row">Nenhuma solicitação atribuída.</td>
+              </tr>
+            </tbody>
+          </table>
+          <app-paginacao
+            [paginaAtual]="paginaMinhas"
+            [totalPaginas]="totalPaginasMinhas"
+            [primeiro]="primeiroMinhas"
+            [ultimo]="ultimoMinhas"
+            (paginaMudou)="onPaginaMinhasMudou($event)">
+          </app-paginacao>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Drawer de detalhes -->
+<app-solicitacao-detalhes
+  *ngIf="selectedSolicitacao"
+  [solicitacao]="selectedSolicitacao"
+  [mostrarDadosSolicitante]="false"
+  (fechar)="selectedSolicitacao = null">
+  <button class="btn-success" (click)="onPuxarAtendimento()">
+    <mat-icon>assignment_ind</mat-icon>Puxar Atendimento
+  </button>
+  <button class="btn-outline" (click)="selectedSolicitacao = null">Fechar</button>
+</app-solicitacao-detalhes>

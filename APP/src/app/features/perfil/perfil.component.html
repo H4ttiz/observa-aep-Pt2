@@ -1,0 +1,142 @@
+<app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()"></app-navbar-top>
+
+<div class="perfil-page">
+
+  <div class="perfil-header">
+    <button class="btn-voltar" (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon> Voltar
+    </button>
+    <div>
+      <h1 class="perfil-title">Meu Perfil</h1>
+      <p class="perfil-subtitle">Gerencie suas informações pessoais</p>
+    </div>
+  </div>
+
+  <div *ngIf="carregando" class="loading-wrap">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="!carregando && usuario" class="perfil-grid">
+
+    <!-- ── Foto de perfil ── -->
+    <div class="card foto-card">
+      <div class="foto-wrap">
+        <img *ngIf="fotoPreview || usuario.fotoPerfil"
+             [src]="fotoPreview ?? usuario.fotoPerfil"
+             class="foto-img" alt="Foto de perfil" />
+        <div *ngIf="!fotoPreview && !usuario.fotoPerfil" class="foto-placeholder">
+          {{ usuario.nome.charAt(0).toUpperCase() }}
+        </div>
+      </div>
+      <label class="btn-outline foto-btn">
+        <mat-icon>photo_camera</mat-icon> Alterar foto
+        <input type="file" accept="image/*" (change)="onFotoChange($event)" hidden />
+      </label>
+      <button *ngIf="fotoFile" class="btn-primary" (click)="salvarFoto()" [disabled]="salvando">
+        <mat-icon>save</mat-icon> Salvar foto
+      </button>
+      <div class="perfil-tipo">
+        <span class="badge-perfil badge-{{ usuario.tipoUsuario }}">{{ usuario.tipoUsuario }}</span>
+      </div>
+    </div>
+
+    <!-- ── Dados pessoais ── -->
+    <div class="card dados-card">
+      <h2 class="card-title">Dados Pessoais</h2>
+
+      <form #perfilForm="ngForm" (ngSubmit)="salvarDados(perfilForm)" novalidate>
+
+        <div class="form-group">
+          <label class="form-label">Nome completo <span class="required">*</span></label>
+          <input class="form-input"
+                 [class.input-error]="nomeRef.invalid && (nomeRef.touched || submitted)"
+                 type="text"
+                 [(ngModel)]="form.nome"
+                 name="nome"
+                 #nomeRef="ngModel"
+                 required
+                 placeholder="Seu nome" />
+          <app-field-error [errors]="nomeRef.errors" [touched]="nomeRef.touched" [submitted]="submitted"></app-field-error>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input readonly" type="email" [value]="usuario!.email" disabled />
+          <span class="form-hint">O email não pode ser alterado por aqui.</span>
+        </div>
+
+        <div class="form-group" *ngIf="usuario!.cpf">
+          <label class="form-label">CPF</label>
+          <input class="form-input readonly" type="text" [value]="usuario!.cpf" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Celular</label>
+          <input class="form-input"
+                 type="tel"
+                 [(ngModel)]="form.celular"
+                 name="celular"
+                 placeholder="(00) 00000-0000" />
+        </div>
+
+        <!-- Trocar senha -->
+        <div class="senha-section">
+          <button type="button" class="btn-link" (click)="alterandoSenha ? cancelarSenha() : (alterandoSenha = true)">
+            <mat-icon>{{ alterandoSenha ? 'expand_less' : 'lock_outline' }}</mat-icon>
+            {{ alterandoSenha ? 'Cancelar troca de senha' : 'Alterar senha' }}
+          </button>
+
+          <div *ngIf="alterandoSenha" class="senha-fields">
+            <div class="form-group">
+              <label class="form-label">Senha atual <span class="required">*</span></label>
+              <app-password-input
+                [(ngModel)]="form.senhaAtual"
+                name="senhaAtual"
+                #senhaAtualRef="ngModel"
+                required
+                autocomplete="current-password"
+                placeholder="Senha atual">
+              </app-password-input>
+              <app-field-error [errors]="senhaAtualRef.errors" [touched]="senhaAtualRef.touched" [submitted]="submitted"></app-field-error>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nova senha <span class="required">*</span></label>
+              <app-password-input
+                [(ngModel)]="form.novaSenha"
+                name="novaSenha"
+                #novaSenhaRef="ngModel"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="Mínimo 8 caracteres">
+              </app-password-input>
+              <app-field-error [errors]="novaSenhaRef.errors" [touched]="novaSenhaRef.touched" [submitted]="submitted"></app-field-error>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirmar nova senha <span class="required">*</span></label>
+              <app-password-input
+                [(ngModel)]="form.confirmarNovaSenha"
+                name="confirmarNovaSenha"
+                #confirmarRef="ngModel"
+                required
+                autocomplete="new-password"
+                placeholder="Repita a nova senha">
+              </app-password-input>
+              <app-field-error [errors]="confirmarRef.errors" [touched]="confirmarRef.touched" [submitted]="submitted"></app-field-error>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button type="submit" class="btn-primary" [disabled]="salvando">
+            <mat-icon>save</mat-icon> {{ salvando ? 'Salvando...' : 'Salvar alterações' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,51 @@
+<div class="dash-wrapper">
+
+  <header class="dash-header">
+    <div class="brand">
+      <mat-icon>account_balance</mat-icon>
+      <span>ObservaAção</span>
+    </div>
+    <div class="user-area">
+      <span class="user-chip">
+        <mat-icon>person</mat-icon>
+        {{ nome }}
+      </span>
+      <button mat-stroked-button class="logout-btn" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
+      </button>
+    </div>
+  </header>
+
+  <main class="dash-content">
+    <div class="welcome-card">
+      <div class="welcome-icon-wrap">
+        <mat-icon>waving_hand</mat-icon>
+      </div>
+      <h2>Bem-vindo, <strong>{{ nome }}</strong>!</h2>
+      <p class="tipo-badge">
+        <mat-icon>verified_user</mat-icon>
+        {{ tipoUsuario }}
+      </p>
+      <p class="info-text">
+        Você está autenticado com sucesso. O painel completo do ObservaAção
+        está em desenvolvimento e estará disponível em breve.
+      </p>
+      <div class="features-preview">
+        <div class="feature-item">
+          <mat-icon>assignment</mat-icon>
+          <span>Minhas Solicitações</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>track_changes</mat-icon>
+          <span>Acompanhamento</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>notifications</mat-icon>
+          <span>Notificações</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>

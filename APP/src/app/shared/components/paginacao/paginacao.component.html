@@ -1,0 +1,15 @@
+<nav class="paginacao" *ngIf="totalPaginas > 1">
+  <button class="pag-btn pag-nav" [disabled]="primeiro" (click)="anterior()" aria-label="Anterior">&#8249;</button>
+
+  <ng-container *ngFor="let p of paginas">
+    <span *ngIf="!isNumber(p)" class="pag-ellipsis">&#8230;</span>
+    <button *ngIf="isNumber(p)"
+      class="pag-btn"
+      [class.pag-ativo]="p === paginaAtual"
+      (click)="ir(p)">
+      {{ p + 1 }}
+    </button>
+  </ng-container>
+
+  <button class="pag-btn pag-nav" [disabled]="ultimo" (click)="proximo()" aria-label="Próximo">&#8250;</button>
+</nav>
