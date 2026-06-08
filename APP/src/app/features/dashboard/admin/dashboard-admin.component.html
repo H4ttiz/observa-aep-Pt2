@@ -1,0 +1,454 @@
+<div class="dashboard-layout">
+  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()"></app-navbar-top>
+
+  <div class="dashboard-body">
+    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" (itemSelected)="setTab($event)"></app-navbar-lateral>
+
+    <main class="content-area">
+
+      <!-- ══ INÍCIO ══ -->
+      <div *ngIf="activeTab === 'inicio'" class="tab-content">
+        <div class="page-header">
+          <h2>Painel Administrativo</h2>
+          <p class="page-subtitle">Visão geral do sistema ObservaAção</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <mat-icon class="stat-icon">group</mat-icon>
+            <span class="stat-label">Usuários Cadastrados</span>
+            <span class="stat-value">{{ stats.usuarios }}</span>
+          </div>
+          <div class="stat-card">
+            <mat-icon class="stat-icon">assignment</mat-icon>
+            <span class="stat-label">Total de Solicitações</span>
+            <span class="stat-value">{{ stats.solicitacoes }}</span>
+          </div>
+          <div class="stat-card">
+            <mat-icon class="stat-icon">sell</mat-icon>
+            <span class="stat-label">Categorias Ativas</span>
+            <span class="stat-value">{{ stats.categorias }}</span>
+          </div>
+        </div>
+
+        <div class="info-banner">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <p>
+            Como <strong>Administrador</strong>, você tem acesso total ao sistema: visualização de logs,
+            gestão de usuários e categorias, e visibilidade completa de todas as solicitações,
+            incluindo dados de solicitantes anônimos em casos excepcionais.
+          </p>
+        </div>
+      </div>
+
+      <!-- ══ LOGS DO SISTEMA ══ -->
+      <div *ngIf="activeTab === 'logs'" class="tab-content" id="logs-tab">
+        <div class="page-header section-header-row">
+          <div>
+            <h2>Logs do Sistema</h2>
+            <p class="page-subtitle">Registros de atividade</p>
+          </div>
+          <div class="filtro-wrap">
+            <label>Filtrar:</label>
+            <select class="form-input form-select" [(ngModel)]="filtroLog" (ngModelChange)="onFiltroLogChange()">
+              <option value="">Todos</option>
+              <option value="CRIACAO">Criação</option>
+              <option value="ALTERACAO">Alteração</option>
+              <option value="EXCLUSAO">Exclusão</option>
+              <option value="LOGIN">Login</option>
+              <option value="ACESSO_NEGADO">Acesso Negado</option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="carregandoLogs" class="empty-row" style="text-align:center;padding:2rem">
+          Carregando...
+        </div>
+
+        <div class="table-card" *ngIf="!carregandoLogs">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Responsável</th>
+                <th>Descrição</th>
+                <th>Data/Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of logsExibidos">
+                <td class="col-id">#{{ log.id }}</td>
+                <td><app-status-badge [tipoLog]="log.tipoLog"></app-status-badge></td>
+                <td class="col-email">{{ log.nomeUsuario }}</td>
+                <td class="col-desc">{{ log.descricao }}</td>
+                <td class="col-date">{{ log.dataCriacao | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+              </tr>
+              <tr *ngIf="!logsExibidos.length">
+                <td colspan="5" class="empty-row">Nenhum log encontrado.</td>
+              </tr>
+            </tbody>
+          </table>
+          <app-paginacao
+            [paginaAtual]="paginaAtualLogs"
+            [totalPaginas]="totalPaginasLogs"
+            [primeiro]="primeiroLogs"
+            [ultimo]="ultimoLogs"
+            (paginaMudou)="onPaginaLogsMudou($event)">
+          </app-paginacao>
+        </div>
+      </div>
+
+      <!-- ══ TODAS AS SOLICITAÇÕES ══ -->
+      <div *ngIf="activeTab === 'solicitacoes'" class="tab-content">
+        <div class="page-header">
+          <h2>Todas as Solicitações</h2>
+          <p class="page-subtitle">Visão completa incluindo dados restritos</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Status</th>
+                <th>Solicitante</th>
+                <th>Data</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of solicitacoes">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoria }}</td>
+                <td><app-status-badge [status]="s.status"></app-status-badge></td>
+                <td>
+                  <span *ngIf="s.anonimo" class="badge-anonimo-admin">
+                    <mat-icon>person_off</mat-icon> Anônimo
+                  </span>
+                  <span *ngIf="!s.anonimo">{{ s.solicitante?.nome ?? '—' }}</span>
+                </td>
+                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ USUÁRIOS ══ -->
+      <div *ngIf="activeTab === 'usuarios'" class="tab-content" id="usuarios-tab">
+        <div class="page-header section-header-row">
+          <div>
+            <h2>Gestão de Usuários</h2>
+            <p class="page-subtitle">{{ totalElementosUsuarios }} usuários cadastrados</p>
+          </div>
+          <button class="btn-primary" (click)="onAbrirModalUsuario()">
+            <mat-icon>person_add</mat-icon> Criar Usuário
+          </button>
+        </div>
+
+        <div *ngIf="carregandoUsuarios" class="empty-row" style="text-align:center;padding:2rem">
+          Carregando...
+        </div>
+
+        <div class="table-card" *ngIf="!carregandoUsuarios">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Perfil</th>
+                <th>Status</th>
+                <th>Criação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of usuarios">
+                <td class="col-id">#{{ u.id }}</td>
+                <td class="col-titulo">{{ u.nome }}</td>
+                <td class="col-email">{{ u.email }}</td>
+                <td><span class="badge-perfil badge-{{ u.tipoUsuario }}">{{ u.tipoUsuario }}</span></td>
+                <td>
+                  <span class="badge-ativo"   *ngIf="u.ativo">Ativo</span>
+                  <span class="badge-inativo" *ngIf="!u.ativo">Inativo</span>
+                </td>
+                <td>{{ u.dataCriacao | date:'dd/MM/yyyy' }}</td>
+                <td class="acoes-col">
+                  <button class="btn-link" (click)="verUsuario(u)" matTooltip="Ver detalhes">
+                    <mat-icon>visibility</mat-icon> Ver mais
+                  </button>
+                  <!-- Pode modificar -->
+                  <ng-container *ngIf="podeModificar(u)">
+                    <button class="btn-link btn-success-link" *ngIf="!u.ativo" (click)="onAtivar(u)"
+                            matTooltip="Ativar usuário">
+                      <mat-icon>check_circle_outline</mat-icon> Ativar
+                    </button>
+                    <button class="btn-link btn-warn-link" *ngIf="u.ativo" (click)="onDesativar(u)"
+                            matTooltip="Desativar usuário">
+                      <mat-icon>block</mat-icon> Desativar
+                    </button>
+                    <button class="btn-link btn-danger-link" *ngIf="!u.ativo" (click)="onExcluir(u)"
+                            matTooltip="Excluir permanentemente">
+                      <mat-icon>delete_outline</mat-icon> Excluir
+                    </button>
+                  </ng-container>
+
+                  <!-- Não pode modificar (ADM raiz ou criado por outro ADM) -->
+                  <span *ngIf="!podeModificar(u)" class="btn-disabled"
+                        matTooltip="Sem permissão para modificar este usuário">
+                    <mat-icon>lock_outline</mat-icon> Protegido
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="!usuarios.length">
+                <td colspan="7" class="empty-row">Nenhum usuário encontrado.</td>
+              </tr>
+            </tbody>
+          </table>
+          <app-paginacao
+            [paginaAtual]="paginaAtualUsuarios"
+            [totalPaginas]="totalPaginasUsuarios"
+            [primeiro]="primeiroUsuarios"
+            [ultimo]="ultimoUsuarios"
+            (paginaMudou)="onPaginaUsuariosMudou($event)">
+          </app-paginacao>
+        </div>
+      </div>
+
+      <!-- ══ CATEGORIAS ══ -->
+      <div *ngIf="activeTab === 'categorias'" class="tab-content">
+        <div class="page-header section-header-row">
+          <div>
+            <h2>Gestão de Categorias</h2>
+            <p class="page-subtitle">{{ categorias.length }} categorias cadastradas</p>
+          </div>
+          <button class="btn-primary" (click)="showModalCategoria = true">
+            <mat-icon>add</mat-icon> Nova Categoria
+          </button>
+        </div>
+
+        <div class="categorias-grid">
+          <div class="categoria-card" *ngFor="let c of categorias" [class.inativa]="!c.ativa">
+            <div class="cat-header">
+              <span class="cat-nome">{{ c.nome }}</span>
+              <span class="badge-ativo"   *ngIf="c.ativa">Ativa</span>
+              <span class="badge-inativo" *ngIf="!c.ativa">Inativa</span>
+            </div>
+            <p class="cat-desc">{{ c.descricao }}</p>
+            <div class="cat-actions">
+              <button class="btn-link btn-danger-link" (click)="onExcluirCategoria(c.nome)">
+                <mat-icon>delete_outline</mat-icon> Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Drawer de detalhes -->
+<app-solicitacao-detalhes
+  *ngIf="selectedSolicitacao"
+  [solicitacao]="selectedSolicitacao"
+  [mostrarDadosSolicitante]="true"
+  (fechar)="selectedSolicitacao = null">
+  <button class="btn-danger" (click)="onRemoverAnonimato()"
+          *ngIf="selectedSolicitacao?.anonimo">
+    <mat-icon>no_accounts</mat-icon> Remover Anonimato
+  </button>
+  <button class="btn-outline" (click)="selectedSolicitacao = null">Fechar</button>
+</app-solicitacao-detalhes>
+
+<!-- Modal: Criar Usuário -->
+<div class="modal-overlay" *ngIf="showModalUsuario" (click)="showModalUsuario = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">Criar Novo Usuário</h3>
+
+    <form #formCriarUsuario="ngForm" (ngSubmit)="onCriarUsuario(formCriarUsuario)" novalidate>
+
+      <div class="form-group">
+        <label>Nome <span class="required">*</span></label>
+        <input class="form-input"
+               [class.input-error]="nomeRef.invalid && (nomeRef.touched || modalSubmitted)"
+               type="text"
+               [(ngModel)]="novoUsuario.nome"
+               name="nomeModal"
+               #nomeRef="ngModel"
+               required
+               placeholder="Nome completo" />
+        <app-field-error [errors]="nomeRef.errors" [touched]="nomeRef.touched" [submitted]="modalSubmitted"></app-field-error>
+      </div>
+
+      <div class="form-group">
+        <label>Email <span class="required">*</span></label>
+        <input class="form-input"
+               [class.input-error]="emailRef.invalid && (emailRef.touched || modalSubmitted)"
+               type="email"
+               [(ngModel)]="novoUsuario.email"
+               name="emailModal"
+               #emailRef="ngModel"
+               required email
+               placeholder="email@prefeitura.gov.br" />
+        <app-field-error [errors]="emailRef.errors" [touched]="emailRef.touched" [submitted]="modalSubmitted"></app-field-error>
+      </div>
+
+      <div class="form-group">
+        <label>CPF <span class="required">*</span></label>
+        <input class="form-input"
+               [class.input-error]="cpfRef.invalid && (cpfRef.touched || modalSubmitted)"
+               type="text"
+               [(ngModel)]="novoUsuario.cpf"
+               name="cpfModal"
+               #cpfRef="ngModel"
+               required
+               placeholder="000.000.000-00" />
+        <app-field-error [errors]="cpfRef.errors" [touched]="cpfRef.touched" [submitted]="modalSubmitted"></app-field-error>
+      </div>
+
+      <div class="form-group">
+        <label>Celular <span class="muted-label">(opcional)</span></label>
+        <input class="form-input" type="tel"
+               [(ngModel)]="novoUsuario.celular"
+               name="celularModal"
+               placeholder="(00) 00000-0000" />
+      </div>
+
+      <div class="form-group">
+        <label>Senha <span class="required">*</span></label>
+        <app-password-input
+          [(ngModel)]="novoUsuario.senha"
+          name="senhaModal"
+          #senhaModalRef="ngModel"
+          required
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="Mínimo 8 caracteres">
+        </app-password-input>
+        <app-field-error [errors]="senhaModalRef.errors" [touched]="senhaModalRef.touched" [submitted]="modalSubmitted"></app-field-error>
+      </div>
+
+      <div class="form-group">
+        <label>Confirmar Senha <span class="required">*</span></label>
+        <app-password-input
+          [(ngModel)]="novoUsuario.confirmarSenha"
+          name="confirmarSenhaModal"
+          #confirmarSenhaModalRef="ngModel"
+          required
+          autocomplete="new-password"
+          placeholder="Repita a senha">
+        </app-password-input>
+        <app-field-error [errors]="confirmarSenhaModalRef.errors" [touched]="confirmarSenhaModalRef.touched" [submitted]="modalSubmitted"></app-field-error>
+      </div>
+
+      <div class="form-group">
+        <label>Perfil <span class="required">*</span></label>
+        <select class="form-input form-select"
+                [class.input-error]="tipoRef.invalid && (tipoRef.touched || modalSubmitted)"
+                [(ngModel)]="novoUsuario.tipoUsuario"
+                name="tipoModal"
+                #tipoRef="ngModel"
+                required>
+          <option value="">Selecione</option>
+          <option value="ATENDENTE">Atendente</option>
+          <option value="GESTOR">Gestor</option>
+          <option value="ADMINISTRADOR">Administrador</option>
+        </select>
+        <app-field-error [errors]="tipoRef.errors" [touched]="tipoRef.touched" [submitted]="modalSubmitted"></app-field-error>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" type="button" (click)="showModalUsuario = false">Cancelar</button>
+        <button class="btn-primary" type="submit">
+          <mat-icon>person_add</mat-icon> Criar
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Nova Categoria -->
+<div class="modal-overlay" *ngIf="showModalCategoria" (click)="showModalCategoria = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">Nova Categoria</h3>
+    <div class="form-group">
+      <label>Nome</label>
+      <input class="form-input" type="text" [(ngModel)]="novaCategoria.nome" placeholder="Nome da categoria" />
+    </div>
+    <div class="form-group">
+      <label>Descrição</label>
+      <textarea class="form-input form-textarea" [(ngModel)]="novaCategoria.descricao" placeholder="Descrição..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" (click)="showModalCategoria = false">Cancelar</button>
+      <button class="btn-primary" (click)="onCriarCategoria()">
+        <mat-icon>add</mat-icon> Criar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar Desativar -->
+<div class="modal-overlay" *ngIf="showModalConfirmDesativar" (click)="showModalConfirmDesativar = false">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">Desativar Usuário</h3>
+    <p class="modal-body">
+      Tem certeza que deseja desativar <strong>{{ confirmDesativarTarget?.nome }}</strong>?
+      O usuário perderá o acesso ao sistema.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-outline" (click)="showModalConfirmDesativar = false">Cancelar</button>
+      <button class="btn-danger" (click)="confirmarDesativar()">
+        <mat-icon>block</mat-icon> Desativar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar Exclusão -->
+<div class="modal-overlay" *ngIf="showModalConfirmDelete" (click)="showModalConfirmDelete = false">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">Confirmar Exclusão</h3>
+    <p class="modal-body">
+      Tem certeza que deseja excluir permanentemente <strong>{{ confirmDeleteTarget?.nome }}</strong>?
+      Esta ação não pode ser desfeita.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-outline" (click)="showModalConfirmDelete = false">Cancelar</button>
+      <button class="btn-danger" (click)="confirmarExclusao()">
+        <mat-icon>delete</mat-icon> Excluir
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Remover Anonimato -->
+<div class="modal-overlay" *ngIf="showModalRemoverAnonimato" (click)="showModalRemoverAnonimato = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-warning-icon"><mat-icon>warning_amber</mat-icon></div>
+    <h3 class="modal-title">Remover Anonimato</h3>
+    <p class="modal-body">
+      Esta ação é restrita a casos de <strong>investigação</strong> ou <strong>exceções governamentais</strong>.
+      Ao confirmar, os dados do solicitante serão revelados e a ação será registrada nos logs do sistema.
+      <br><br>Confirmar?
+    </p>
+    <div class="modal-actions">
+      <button class="btn-outline" (click)="showModalRemoverAnonimato = false">Cancelar</button>
+      <button class="btn-danger" (click)="confirmarRemoverAnonimato()">
+        <mat-icon>no_accounts</mat-icon> Confirmar
+      </button>
+    </div>
+  </div>
+</div>

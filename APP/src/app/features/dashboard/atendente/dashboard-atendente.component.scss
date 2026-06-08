@@ -1,0 +1,28 @@
+@use '../../../shared/styles/dashboard' as d;
+
+.dashboard-layout { @include d.layout; }
+.dashboard-body   { @include d.body; }
+.content-area     { @include d.content-area; }
+.tab-content      { @include d.tab-content; }
+.page-header      { @include d.page-header; }
+.stats-grid       { @include d.stats-grid; }
+.stat-card        { @include d.stat-card; }
+.table-card       { @include d.table-card; }
+.data-table       { @include d.data-table; }
+.btn-success      { @include d.btn-success; }
+.btn-outline      { @include d.btn-outline; }
+.btn-link         { @include d.btn-link; }
+.info-banner      { @include d.info-banner; }
+
+.prazo-atrasado { color: #DC2626; font-weight: 600; }
+.row-atrasada td { background: #FFF5F5; }
+
+.tag-atraso {
+  margin-left: 6px;
+  background: #FEE2E2;
+  color: #DC2626;
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+}

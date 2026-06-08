@@ -1,4 +1,31 @@
 package com.unicesumar.observa_acao.dto.usuario;
 
-public record UsuarioRequestDTO() {
+import com.unicesumar.observa_acao.enums.TipoUsuario;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record UsuarioRequestDTO(
+
+        @NotBlank
+        String nome,
+
+        @NotBlank @Email
+        String email,
+
+        @NotBlank @Size(min = 8)
+        String senha,
+
+        @NotBlank
+        String confirmarSenha,
+
+        @NotBlank
+        String cpf,
+
+        String celular,
+
+        @NotNull
+        TipoUsuario tipoUsuario
+) {
 }

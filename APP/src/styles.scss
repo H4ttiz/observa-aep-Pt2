@@ -1,0 +1,61 @@
+@use '@angular/material' as mat;
+
+// ===== Material M2 theme with teal palette =====
+@include mat.core();
+
+$primary-palette: mat.define-palette(mat.$teal-palette, 700, 400, 900);
+$accent-palette:  mat.define-palette(mat.$cyan-palette, 400, 100, 700);
+$warn-palette:    mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary-palette,
+    accent:  $accent-palette,
+    warn:    $warn-palette
+  ),
+  typography: mat.define-typography-config(
+    $font-family: "'Inter', 'Segoe UI', sans-serif"
+  ),
+  density: 0
+));
+
+@include mat.all-component-themes($theme);
+
+// ===== Global Reset =====
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: #F5F7F8;
+  color: #2C3E50;
+}
+
+// ===== Snackbar overrides =====
+.snack-error .mdc-snackbar__surface,
+.toast-error .mdc-snackbar__surface {
+  background-color: #C0392B !important;
+}
+
+.snack-success .mdc-snackbar__surface,
+.toast-success .mdc-snackbar__surface {
+  background-color: #2E8B7B !important;
+}
+
+.mat-mdc-snack-bar-label {
+  font-family: 'Inter', sans-serif !important;
+}
+
+// ===== Scrollbar suave =====
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: #F5F7F8; }
+::-webkit-scrollbar-thumb { background: #DDE5E3; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #59C3B2; }
