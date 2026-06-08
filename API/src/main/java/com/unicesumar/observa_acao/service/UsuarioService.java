@@ -21,13 +21,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -268,8 +271,11 @@ public class UsuarioService {
         logService.registrar(TipoLog.EXCLUSAO, "Usuário excluído: " + emailAlvo, admLogado);
     }
 
-    public List<UsuarioResponseDTO> listarTodos() {
-        return usuarioMapper.toResponseDTOList(usuarioRepository.findAll());
+    public Page<UsuarioResponseDTO> listarTodos(Pageable pageable) {
+        if (pageable.getPageSize() > 100) {
+            pageable = PageRequest.of(pageable.getPageNumber(), 20, pageable.getSort());
+        }
+        return usuarioRepository.findAll(pageable).map(usuarioMapper::toResponseDTO);
     }
 
     public UsuarioResponseDTO buscarPorId(Long id) {
