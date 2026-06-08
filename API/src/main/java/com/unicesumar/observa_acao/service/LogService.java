@@ -1,0 +1,40 @@
+package com.unicesumar.observa_acao.service;
+
+import com.unicesumar.observa_acao.dto.log.LogResponseDTO;
+import com.unicesumar.observa_acao.enums.TipoLog;
+import com.unicesumar.observa_acao.mapper.LogMapper;
+import com.unicesumar.observa_acao.model.Log;
+import com.unicesumar.observa_acao.model.Usuario;
+import com.unicesumar.observa_acao.repository.LogRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class LogService {
+
+    private final LogRepository logRepository;
+    private final LogMapper logMapper;
+
+    @Transactional
+    public void registrar(TipoLog tipoLog, String descricao, Usuario responsavel) {
+        Log log = new Log();
+        log.setTipoLog(tipoLog);
+        log.setDescricao(descricao);
+        log.setUsuario(responsavel);
+        log.setDataRegistro(LocalDateTime.now());
+        logRepository.save(log);
+    }
+
+    public List<LogResponseDTO> listarTodos() {
+        return logMapper.toResponseDTOList(logRepository.findAllByOrderByDataRegistroDesc());
+    }
+
+    public List<LogResponseDTO> listarPorTipo(TipoLog tipo) {
+        return logMapper.toResponseDTOList(logRepository.findByTipoLogOrderByDataRegistroDesc(tipo));
+    }
+}

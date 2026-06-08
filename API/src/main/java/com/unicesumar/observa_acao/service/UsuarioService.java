@@ -12,7 +12,6 @@ import com.unicesumar.observa_acao.mapper.UsuarioMapper;
 import com.unicesumar.observa_acao.model.Usuario;
 import com.unicesumar.observa_acao.repository.UsuarioRepository;
 import com.unicesumar.observa_acao.util.CpfUtil;
-import com.unicesumar.observa_acao.util.LogUtil;
 import com.unicesumar.observa_acao.util.ValidacaoUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,7 +37,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
-    private final LogUtil logUtil;
+    private final LogService logService;
 
     private Usuario getUsuarioLogado() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -90,7 +89,7 @@ public class UsuarioService {
         usuario.setCriadoPor(admLogado);
 
         Usuario salvo = usuarioRepository.save(usuario);
-        logUtil.registrar(TipoLog.CRIACAO, "Usuário criado: " + salvo.getEmail(), admLogado);
+        logService.registrar(TipoLog.CRIACAO, "Usuário criado: " + salvo.getEmail(), admLogado);
 
         return usuarioMapper.toResponseDTO(salvo);
     }
@@ -137,7 +136,7 @@ public class UsuarioService {
             alvo.setTipoUsuario(dto.tipoUsuario());
         }
 
-        logUtil.registrar(TipoLog.ALTERACAO, "Usuário atualizado: " + alvo.getEmail(), admLogado);
+        logService.registrar(TipoLog.ALTERACAO, "Usuário atualizado: " + alvo.getEmail(), admLogado);
 
         return usuarioMapper.toResponseDTO(alvo);
     }
@@ -170,7 +169,7 @@ public class UsuarioService {
             usuario.setSenha(passwordEncoder.encode(dto.novaSenha()));
         }
 
-        logUtil.registrar(TipoLog.ALTERACAO, "Perfil atualizado pelo próprio usuário", usuario);
+        logService.registrar(TipoLog.ALTERACAO, "Perfil atualizado pelo próprio usuário", usuario);
 
         return usuarioMapper.toResponseDTO(usuario);
     }
@@ -204,6 +203,8 @@ public class UsuarioService {
             throw new RegraDeNegocioException("Erro ao salvar foto de perfil");
         }
 
+        logService.registrar(TipoLog.ALTERACAO, "Foto de perfil atualizada: " + usuario.getEmail(), usuario);
+
         return usuarioMapper.toResponseDTO(usuario);
     }
 
@@ -220,7 +221,7 @@ public class UsuarioService {
         }
 
         alvo.setAtivo(false);
-        logUtil.registrar(TipoLog.ALTERACAO, "Usuário desativado: " + alvo.getEmail(), admLogado);
+        logService.registrar(TipoLog.ALTERACAO, "Usuário desativado: " + alvo.getEmail(), admLogado);
 
         return usuarioMapper.toResponseDTO(alvo);
     }
@@ -238,7 +239,7 @@ public class UsuarioService {
         }
 
         alvo.setAtivo(true);
-        logUtil.registrar(TipoLog.ALTERACAO, "Usuário ativado: " + alvo.getEmail(), admLogado);
+        logService.registrar(TipoLog.ALTERACAO, "Usuário ativado: " + alvo.getEmail(), admLogado);
 
         return usuarioMapper.toResponseDTO(alvo);
     }
@@ -264,7 +265,7 @@ public class UsuarioService {
             throw new RegraDeNegocioException("Não é possível excluir: usuário possui vínculos no sistema");
         }
 
-        logUtil.registrar(TipoLog.EXCLUSAO, "Usuário excluído: " + emailAlvo, admLogado);
+        logService.registrar(TipoLog.EXCLUSAO, "Usuário excluído: " + emailAlvo, admLogado);
     }
 
     public List<UsuarioResponseDTO> listarTodos() {

@@ -71,6 +71,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/usuarios/perfil/foto").authenticated()
                         // demais endpoints de /usuarios — somente ADMINISTRADOR
                         .requestMatchers("/usuarios", "/usuarios/**").hasRole("ADMINISTRADOR")
+                        // logs — somente ADMINISTRADOR
+                        .requestMatchers(HttpMethod.GET, "/logs/**").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
