@@ -13,6 +13,7 @@ import com.unicesumar.observa_acao.model.RefreshToken;
 import com.unicesumar.observa_acao.model.Usuario;
 import com.unicesumar.observa_acao.repository.UsuarioRepository;
 import com.unicesumar.observa_acao.util.CpfUtil;
+import com.unicesumar.observa_acao.util.FotoUrlHelper;
 import com.unicesumar.observa_acao.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,6 +34,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
+    private final FotoUrlHelper fotoUrlHelper;
 
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO dto) {
@@ -56,6 +58,7 @@ public class AuthService {
                 refreshToken.getToken(),
                 usuario.getTipoUsuario(),
                 usuario.getNome(),
+                fotoUrlHelper.buildFotoUrl(usuario.getFotoPerfil()),
                 jwtUtil.getExpiration()
         );
     }
@@ -74,6 +77,7 @@ public class AuthService {
                 novoRefreshToken.getToken(),
                 usuario.getTipoUsuario(),
                 usuario.getNome(),
+                fotoUrlHelper.buildFotoUrl(usuario.getFotoPerfil()),
                 jwtUtil.getExpiration()
         );
     }

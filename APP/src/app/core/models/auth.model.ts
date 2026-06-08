@@ -9,6 +9,7 @@ export interface LoginResponse {
   refreshToken: string;
   tipoUsuario: string;
   nomeUsuario: string;
+  fotoPerfil: string | null;
   expiresIn: number;
 }
 

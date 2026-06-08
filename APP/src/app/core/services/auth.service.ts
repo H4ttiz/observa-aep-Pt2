@@ -38,6 +38,7 @@ export class AuthService {
         localStorage.setItem(TIPO_KEY,    res.tipoUsuario);
         localStorage.setItem(NOME_KEY,    res.nomeUsuario);
         localStorage.setItem(USER_ID_KEY, String(res.userId));
+        this.setFotoPerfil(res.fotoPerfil ?? null);
         this._autenticado$.next(true);
       })
     );

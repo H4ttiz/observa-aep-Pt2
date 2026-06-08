@@ -9,6 +9,7 @@ public record LoginResponseDTO(
         String refreshToken,
         TipoUsuario tipoUsuario,
         String nomeUsuario,
+        String fotoPerfil,
         long expiresIn
 ) {
 }
