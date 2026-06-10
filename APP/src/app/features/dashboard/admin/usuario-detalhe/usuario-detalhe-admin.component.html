@@ -16,7 +16,7 @@
     <p class="loading-text">Carregando...</p>
   </div>
 
-  <div *ngIf="!carregando && usuario" class="detalhe-grid">
+  <div *ngIf="!carregando && usuario" class="detalhe-grid detalhe-grid-wide">
 
     <!-- ── Cartão resumo ── -->
     <div class="card resumo-card">
@@ -98,7 +98,7 @@
         </div>
       </div>
 
-      <!-- Modo edição (pode modificar) -->
+      <!-- Modo edição — endereço no form (modo leitura abaixo da grade) -->
       <form *ngIf="podeModificar" #detalheForm="ngForm" (ngSubmit)="salvarDados(detalheForm)" novalidate>
 
         <div class="form-group">
@@ -157,6 +157,15 @@
           <app-field-error [errors]="tipoRef.errors" [touched]="tipoRef.touched" [submitted]="submitted"></app-field-error>
         </div>
 
+        <!-- Endereço (edição) -->
+        <div class="form-group">
+          <label class="form-label section-label">Endereço</label>
+          <app-endereco-usuario-form
+            [enderecoInicial]="usuario.enderecoUsuario ?? null"
+            [submitted]="submitted">
+          </app-endereco-usuario-form>
+        </div>
+
         <div class="card-actions">
           <button type="submit" class="btn-primary" [disabled]="salvando">
             <mat-icon>save</mat-icon> {{ salvando ? 'Salvando...' : 'Salvar alterações' }}
@@ -164,6 +173,33 @@
         </div>
 
       </form>
+    </div>
+
+    <!-- ── Endereço (modo leitura) ── -->
+    <div *ngIf="!podeModificar && usuario.enderecoUsuario" class="card dados-card">
+      <h2 class="card-title">Endereço</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">CEP</span>
+          <span class="info-value">{{ usuario.enderecoUsuario.cep }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Logradouro</span>
+          <span class="info-value">{{ usuario.enderecoUsuario.logradouro }}, {{ usuario.enderecoUsuario.numero }}</span>
+        </div>
+        <div class="info-item" *ngIf="usuario.enderecoUsuario.complemento">
+          <span class="info-label">Complemento</span>
+          <span class="info-value">{{ usuario.enderecoUsuario.complemento }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Bairro</span>
+          <span class="info-value">{{ usuario.enderecoUsuario.bairro }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Cidade / UF</span>
+          <span class="info-value">{{ usuario.enderecoUsuario.cidade }} — {{ usuario.enderecoUsuario.estado }}</span>
+        </div>
+      </div>
     </div>
 
   </div>

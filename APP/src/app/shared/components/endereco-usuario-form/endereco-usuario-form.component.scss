@@ -1,0 +1,127 @@
+$primary:   #2E8B7B;
+$accent:    #59C3B2;
+$white:     #FFFFFF;
+$bg-light:  #F8FAFC;
+$text:      #1E293B;
+$text2:     #334155;
+$muted:     #64748B;
+$border:    #E2E8F0;
+$red:       #EF4444;
+
+.endereco-fieldset {
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  padding: 1.25rem 1.25rem 0.5rem;
+  margin: 0;
+  background: $bg-light;
+}
+
+.endereco-legend {
+  padding: 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: $primary;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0;
+
+  &.two-cols {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+
+    .form-group:last-child { width: 100px; }
+  }
+
+  &.three-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1rem;
+
+    .form-group:last-child { width: 80px; }
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 1rem;
+  min-width: 0;
+
+  &.flex-2 { flex: 2; }
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text2;
+  white-space: nowrap;
+}
+
+.required { color: $red; }
+.muted-label { color: $muted; font-weight: 400; }
+
+.form-input {
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: $text;
+  background: $white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: $accent;
+    box-shadow: 0 0 0 3px rgba(89,195,178,0.15);
+  }
+
+  &::placeholder { color: $muted; }
+
+  &.input-error {
+    border-color: $red;
+    &:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+  }
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748B' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 2rem;
+  cursor: pointer;
+}
+
+.cep-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input { flex: 1; }
+}
+
+.cep-loading {
+  position: absolute;
+  right: 10px;
+  font-size: 0.75rem;
+  color: $muted;
+  font-style: italic;
+  pointer-events: none;
+}
+
+.field-error {
+  display: block;
+  color: $red;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}

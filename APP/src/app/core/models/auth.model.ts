@@ -1,3 +1,5 @@
+import { EnderecoUsuarioRequest } from './endereco.model';
+
 export interface LoginRequest {
   email: string;
   senha: string;
@@ -19,6 +21,7 @@ export interface CadastroRequest {
   senha: string;
   cpf: string;
   celular?: string | null;
+  enderecoUsuario: EnderecoUsuarioRequest;
 }
 
 export interface UsuarioResponse {

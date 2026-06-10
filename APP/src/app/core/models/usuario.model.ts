@@ -1,3 +1,5 @@
+import { EnderecoUsuario, EnderecoUsuarioRequest } from './endereco.model';
+
 export interface Usuario {
   id: number;
   nome: string;
@@ -10,6 +12,7 @@ export interface Usuario {
   ativo: boolean;
   criadoPorId?: number;
   criadoPorNome?: string;
+  enderecoUsuario?: EnderecoUsuario | null;
 }
 
 export interface UsuarioRequest {
@@ -20,6 +23,7 @@ export interface UsuarioRequest {
   cpf: string;
   celular?: string;
   tipoUsuario: string;
+  enderecoUsuario?: EnderecoUsuarioRequest;
 }
 
 export interface UsuarioUpdateRequest {
@@ -28,6 +32,7 @@ export interface UsuarioUpdateRequest {
   cpf?: string;
   celular?: string;
   tipoUsuario?: string;
+  enderecoUsuario?: EnderecoUsuarioRequest;
 }
 
 export interface UsuarioSelfUpdateRequest {
@@ -36,4 +41,5 @@ export interface UsuarioSelfUpdateRequest {
   senhaAtual?: string;
   novaSenha?: string;
   confirmarNovaSenha?: string;
+  enderecoUsuario?: EnderecoUsuarioRequest;
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { NavbarTopComponent } from '../../shared/components/navbar-top/navbar-top.component';
 import { PasswordInputComponent } from '../../shared/components/password-input/password-input.component';
 import { FieldErrorComponent } from '../../shared/components/field-error/field-error.component';
+import { EnderecoUsuarioFormComponent } from '../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
 import { Usuario, UsuarioSelfUpdateRequest } from '../../core/models/usuario.model';
 
 @Component({
@@ -19,12 +20,15 @@ import { Usuario, UsuarioSelfUpdateRequest } from '../../core/models/usuario.mod
   imports: [
     NgIf, FormsModule,
     MatIconModule, MatButtonModule, MatProgressSpinnerModule,
-    NavbarTopComponent, PasswordInputComponent, FieldErrorComponent
+    NavbarTopComponent, PasswordInputComponent, FieldErrorComponent,
+    EnderecoUsuarioFormComponent
   ],
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.scss'
 })
 export class PerfilComponent implements OnInit {
+
+  @ViewChild(EnderecoUsuarioFormComponent) enderecoForm?: EnderecoUsuarioFormComponent;
 
   nome = this.auth.getNomeUsuario() ?? '';
 
@@ -94,17 +98,23 @@ export class PerfilComponent implements OnInit {
 
   salvarDados(formRef: any): void {
     this.submitted = true;
+    this.enderecoForm?.markAllAsTouched();
+
     if (formRef.invalid) return;
 
     const payload: UsuarioSelfUpdateRequest = {
-      nome: this.form.nome,
+      nome:    this.form.nome,
       celular: this.form.celular
     };
 
     if (this.alterandoSenha) {
-      payload.senhaAtual = this.form.senhaAtual;
-      payload.novaSenha = this.form.novaSenha;
-      payload.confirmarNovaSenha = this.form.confirmarNovaSenha;
+      payload.senhaAtual          = this.form.senhaAtual;
+      payload.novaSenha           = this.form.novaSenha;
+      payload.confirmarNovaSenha  = this.form.confirmarNovaSenha;
+    }
+
+    if (this.enderecoForm) {
+      payload.enderecoUsuario = this.enderecoForm.value;
     }
 
     this.salvando = true;

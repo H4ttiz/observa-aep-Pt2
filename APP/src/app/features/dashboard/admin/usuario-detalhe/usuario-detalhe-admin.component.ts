@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -10,6 +10,7 @@ import { UsuarioService } from '../../../../core/services/usuario.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { NavbarTopComponent } from '../../../../shared/components/navbar-top/navbar-top.component';
 import { FieldErrorComponent } from '../../../../shared/components/field-error/field-error.component';
+import { EnderecoUsuarioFormComponent } from '../../../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
 import { Usuario, UsuarioUpdateRequest } from '../../../../core/models/usuario.model';
 
 @Component({
@@ -18,12 +19,14 @@ import { Usuario, UsuarioUpdateRequest } from '../../../../core/models/usuario.m
   imports: [
     NgIf, DatePipe, FormsModule,
     MatIconModule, MatButtonModule, MatTooltipModule,
-    NavbarTopComponent, FieldErrorComponent
+    NavbarTopComponent, FieldErrorComponent, EnderecoUsuarioFormComponent
   ],
   templateUrl: './usuario-detalhe-admin.component.html',
   styleUrl: './usuario-detalhe-admin.component.scss'
 })
 export class UsuarioDetalheAdminComponent implements OnInit {
+
+  @ViewChild(EnderecoUsuarioFormComponent) enderecoForm?: EnderecoUsuarioFormComponent;
 
   nome = this.auth.getNomeUsuario() ?? 'Administrador';
   loggedUserId = this.auth.getUserId();
@@ -68,10 +71,17 @@ export class UsuarioDetalheAdminComponent implements OnInit {
 
   salvarDados(formRef: any): void {
     this.submitted = true;
+    this.enderecoForm?.markAllAsTouched();
+
     if (formRef.invalid || !this.usuario) return;
 
+    const payload: UsuarioUpdateRequest = { ...this.form };
+    if (this.enderecoForm) {
+      payload.enderecoUsuario = this.enderecoForm.value;
+    }
+
     this.salvando = true;
-    this.usuarioService.atualizar(this.usuario.id, this.form).subscribe({
+    this.usuarioService.atualizar(this.usuario.id, payload).subscribe({
       next: u => {
         this.usuario = u;
         this.form = { nome: u.nome, email: u.email, cpf: u.cpf, celular: u.celular, tipoUsuario: u.tipoUsuario };

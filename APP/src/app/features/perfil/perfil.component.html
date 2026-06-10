@@ -129,6 +129,15 @@
           </div>
         </div>
 
+        <!-- Endereço -->
+        <div class="form-group">
+          <label class="form-label section-label">Endereço</label>
+          <app-endereco-usuario-form
+            [enderecoInicial]="usuario!.enderecoUsuario ?? null"
+            [submitted]="submitted">
+          </app-endereco-usuario-form>
+        </div>
+
         <div class="card-actions">
           <button type="submit" class="btn-primary" [disabled]="salvando">
             <mat-icon>save</mat-icon> {{ salvando ? 'Salvando...' : 'Salvar alterações' }}
