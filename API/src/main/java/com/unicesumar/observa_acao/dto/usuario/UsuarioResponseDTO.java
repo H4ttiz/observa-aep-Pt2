@@ -1,5 +1,6 @@
 package com.unicesumar.observa_acao.dto.usuario;
 
+import com.unicesumar.observa_acao.dto.endereco.EnderecoUsuarioResponseDTO;
 import com.unicesumar.observa_acao.enums.TipoUsuario;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ public record UsuarioResponseDTO(
         Boolean ativo,
         LocalDateTime dataCriacao,
         Long criadoPorId,
-        String criadoPorNome
+        String criadoPorNome,
+        EnderecoUsuarioResponseDTO enderecoUsuario
 ) {
 }

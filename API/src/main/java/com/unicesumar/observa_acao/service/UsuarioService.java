@@ -1,5 +1,6 @@
 package com.unicesumar.observa_acao.service;
 
+import com.unicesumar.observa_acao.dto.endereco.EnderecoUsuarioRequestDTO;
 import com.unicesumar.observa_acao.dto.usuario.UsuarioRequestDTO;
 import com.unicesumar.observa_acao.dto.usuario.UsuarioResponseDTO;
 import com.unicesumar.observa_acao.dto.usuario.UsuarioSelfUpdateDTO;
@@ -8,8 +9,11 @@ import com.unicesumar.observa_acao.enums.TipoLog;
 import com.unicesumar.observa_acao.exception.AcessoNegadoException;
 import com.unicesumar.observa_acao.exception.NotFoundException;
 import com.unicesumar.observa_acao.exception.RegraDeNegocioException;
+import com.unicesumar.observa_acao.mapper.EnderecoUsuarioMapper;
 import com.unicesumar.observa_acao.mapper.UsuarioMapper;
+import com.unicesumar.observa_acao.model.EnderecoUsuario;
 import com.unicesumar.observa_acao.model.Usuario;
+import com.unicesumar.observa_acao.repository.EnderecoUsuarioRepository;
 import com.unicesumar.observa_acao.repository.UsuarioRepository;
 import com.unicesumar.observa_acao.util.CpfUtil;
 import com.unicesumar.observa_acao.util.ValidacaoUtil;
@@ -38,8 +42,10 @@ import java.util.UUID;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final EnderecoUsuarioRepository enderecoUsuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
+    private final EnderecoUsuarioMapper enderecoUsuarioMapper;
     private final LogService logService;
 
     private Usuario getUsuarioLogado() {
@@ -55,6 +61,29 @@ public class UsuarioService {
         if (!alvo.getCriadoPor().getId().equals(admLogado.getId())) {
             throw new AcessoNegadoException("Você não tem permissão para modificar este usuário");
         }
+    }
+
+    private EnderecoUsuario salvarEndereco(EnderecoUsuarioRequestDTO dto, Usuario usuario) {
+        EnderecoUsuario endereco;
+        if (enderecoUsuarioRepository.existsByUsuarioId(usuario.getId())) {
+            endereco = enderecoUsuarioRepository.findByUsuarioId(usuario.getId())
+                    .orElseThrow(() -> new NotFoundException("Endereço não encontrado"));
+        } else {
+            endereco = enderecoUsuarioMapper.toEntity(dto);
+            endereco.setUsuario(usuario);
+        }
+        aplicarCamposEndereco(endereco, dto);
+        return enderecoUsuarioRepository.save(endereco);
+    }
+
+    private void aplicarCamposEndereco(EnderecoUsuario endereco, EnderecoUsuarioRequestDTO dto) {
+        endereco.setCep(dto.cep().replaceAll("[^\\d]", ""));
+        endereco.setLogradouro(dto.logradouro().trim());
+        endereco.setNumero(dto.numero().trim());
+        endereco.setBairro(dto.bairro().trim());
+        endereco.setCidade(dto.cidade().trim());
+        endereco.setEstado(dto.estado().toUpperCase().trim());
+        endereco.setComplemento(dto.complemento() != null ? dto.complemento().trim() : null);
     }
 
     @Transactional
@@ -94,6 +123,10 @@ public class UsuarioService {
         Usuario salvo = usuarioRepository.save(usuario);
         logService.registrar(TipoLog.CRIACAO, "Usuário criado: " + salvo.getEmail(), admLogado);
 
+        EnderecoUsuario endereco = salvarEndereco(dto.enderecoUsuario(), salvo);
+        logService.registrar(TipoLog.CRIACAO, "Endereço cadastrado para o usuário ID " + salvo.getId(), admLogado);
+
+        salvo.setEnderecoUsuario(endereco);
         return usuarioMapper.toResponseDTO(salvo);
     }
 
@@ -141,6 +174,14 @@ public class UsuarioService {
 
         logService.registrar(TipoLog.ALTERACAO, "Usuário atualizado: " + alvo.getEmail(), admLogado);
 
+        if (dto.enderecoUsuario() != null) {
+            EnderecoUsuario endereco = salvarEndereco(dto.enderecoUsuario(), alvo);
+            alvo.setEnderecoUsuario(endereco);
+            logService.registrar(TipoLog.ALTERACAO,
+                    "Endereço do usuário ID " + alvo.getId() + " atualizado pelo ADM ID " + admLogado.getId(),
+                    admLogado);
+        }
+
         return usuarioMapper.toResponseDTO(alvo);
     }
 
@@ -173,6 +214,14 @@ public class UsuarioService {
         }
 
         logService.registrar(TipoLog.ALTERACAO, "Perfil atualizado pelo próprio usuário", usuario);
+
+        if (dto.enderecoUsuario() != null) {
+            EnderecoUsuario endereco = salvarEndereco(dto.enderecoUsuario(), usuario);
+            usuario.setEnderecoUsuario(endereco);
+            logService.registrar(TipoLog.ALTERACAO,
+                    "Endereço do usuário ID " + usuario.getId() + " atualizado pelo próprio usuário",
+                    usuario);
+        }
 
         return usuarioMapper.toResponseDTO(usuario);
     }

@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", imports = {CpfUtil.class}, uses = {FotoUrlHelper.class})
+@Mapper(componentModel = "spring", imports = {CpfUtil.class}, uses = {FotoUrlHelper.class, EnderecoUsuarioMapper.class})
 public interface UsuarioMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -21,6 +21,7 @@ public interface UsuarioMapper {
     @Mapping(target = "dataCriacao", ignore = true)
     @Mapping(target = "criadoPor", ignore = true)
     @Mapping(target = "fotoPerfil", ignore = true)
+    @Mapping(target = "enderecoUsuario", ignore = true)
     @Mapping(target = "nome",  expression = "java(dto.nome().trim())")
     @Mapping(target = "email", expression = "java(dto.email().trim().toLowerCase())")
     @Mapping(target = "cpf",   expression = "java(CpfUtil.normalizar(dto.cpf()))")
@@ -33,6 +34,7 @@ public interface UsuarioMapper {
     @Mapping(target = "dataCriacao", ignore = true)
     @Mapping(target = "criadoPor", ignore = true)
     @Mapping(target = "fotoPerfil", ignore = true)
+    @Mapping(target = "enderecoUsuario", ignore = true)
     @Mapping(target = "nome",  expression = "java(dto.nome().trim())")
     @Mapping(target = "email", expression = "java(dto.email().trim().toLowerCase())")
     @Mapping(target = "cpf",   expression = "java(CpfUtil.normalizar(dto.cpf()))")
@@ -41,6 +43,7 @@ public interface UsuarioMapper {
     @Mapping(target = "fotoPerfil", source = "fotoPerfil", qualifiedByName = "buildFotoUrl")
     @Mapping(target = "criadoPorId", source = "criadoPor.id")
     @Mapping(target = "criadoPorNome", source = "criadoPor.nome")
+    @Mapping(target = "enderecoUsuario", source = "enderecoUsuario")
     UsuarioResponseDTO toResponseDTO(Usuario usuario);
 
     List<UsuarioResponseDTO> toResponseDTOList(List<Usuario> usuarios);
