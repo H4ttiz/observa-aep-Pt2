@@ -73,6 +73,10 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios", "/usuarios/**").hasRole("ADMINISTRADOR")
                         // logs — somente ADMINISTRADOR
                         .requestMatchers(HttpMethod.GET, "/logs/**").hasRole("ADMINISTRADOR")
+                        // categorias/ativas — autenticado (deve vir antes da regra de ADMINISTRADOR)
+                        .requestMatchers(HttpMethod.GET, "/categorias/ativas").authenticated()
+                        // demais endpoints de /categorias — somente ADMINISTRADOR
+                        .requestMatchers("/categorias", "/categorias/**").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

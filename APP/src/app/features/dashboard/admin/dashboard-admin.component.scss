@@ -139,6 +139,14 @@
   mat-icon { font-size: 15px; width: 15px; height: 15px; color: #CBD5E1; }
 }
 
+// Header com filtro + botão lado a lado
+.header-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 // Categorias grid
 .categorias-grid {
   display: grid;
@@ -176,7 +184,13 @@
     margin: 0 0 1rem;
   }
 
-  .cat-actions { display: flex; gap: 0.5rem; }
+  .cat-meta {
+    font-size: 0.78rem;
+    color: #94A3B8;
+    margin: -0.5rem 0 0.75rem;
+  }
+
+  .cat-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 }
 
 // Form validation

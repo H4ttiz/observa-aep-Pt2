@@ -199,14 +199,14 @@ export const MOCK_SOLICITACOES: Solicitacao[] = [
 ];
 
 export const MOCK_CATEGORIAS: Categoria[] = [
-  { id: 1, nome: 'Infraestrutura', descricao: 'Buracos, calçadas, pontes e obras em geral', ativa: true },
-  { id: 2, nome: 'Iluminação Pública', descricao: 'Postes apagados e problemas de iluminação', ativa: true },
-  { id: 3, nome: 'Limpeza Urbana', descricao: 'Lixo, varrição e capina', ativa: true },
-  { id: 4, nome: 'Trânsito', descricao: 'Semáforos, sinalização e fluxo de veículos', ativa: true },
-  { id: 5, nome: 'Meio Ambiente', descricao: 'Poda, desmatamento e questões ambientais', ativa: true },
-  { id: 6, nome: 'Saneamento', descricao: 'Esgoto, água e drenagem', ativa: false },
-  { id: 7, nome: 'Patrimônio Público', descricao: 'Monumentos, prédios públicos e praças', ativa: true },
-  { id: 8, nome: 'Acessibilidade', descricao: 'Rampas, calçadas e adaptações para PCD', ativa: true },
-  { id: 9, nome: 'Parques e Lazer', descricao: 'Parques, playgrounds e áreas de esporte', ativa: true }
+  { id: 1, nome: 'Infraestrutura', descricao: 'Buracos, calçadas, pontes e obras em geral', ativo: true, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 2, nome: 'Iluminação Pública', descricao: 'Postes apagados e problemas de iluminação', ativo: true, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 3, nome: 'Limpeza Urbana', descricao: 'Lixo, varrição e capina', ativo: true, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 4, nome: 'Trânsito', descricao: 'Semáforos, sinalização e fluxo de veículos', ativo: true, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 5, nome: 'Meio Ambiente', descricao: 'Poda, desmatamento e questões ambientais', ativo: true, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 6, nome: 'Saneamento', descricao: 'Esgoto, água e drenagem', ativo: false, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 7, nome: 'Patrimônio Público', descricao: 'Monumentos, prédios públicos e praças', ativo: true, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 8, nome: 'Acessibilidade', descricao: 'Rampas, calçadas e adaptações para PCD', ativo: true, dataCriacao: '2026-01-01T00:00:00' },
+  { id: 9, nome: 'Parques e Lazer', descricao: 'Parques, playgrounds e áreas de esporte', ativo: true, dataCriacao: '2026-01-01T00:00:00' }
 ];
 
