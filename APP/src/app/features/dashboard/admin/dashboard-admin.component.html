@@ -226,31 +226,72 @@
       </div>
 
       <!-- ══ CATEGORIAS ══ -->
-      <div *ngIf="activeTab === 'categorias'" class="tab-content">
+      <div *ngIf="activeTab === 'categorias'" class="tab-content" id="categorias-tab">
         <div class="page-header section-header-row">
           <div>
             <h2>Gestão de Categorias</h2>
-            <p class="page-subtitle">{{ categorias.length }} categorias cadastradas</p>
+            <p class="page-subtitle">{{ totalElementosCategorias }} categorias cadastradas</p>
           </div>
-          <button class="btn-primary" (click)="showModalCategoria = true">
-            <mat-icon>add</mat-icon> Nova Categoria
-          </button>
+          <div class="header-actions-row">
+            <div class="filtro-wrap">
+              <label>Status:</label>
+              <select class="form-input form-select" [(ngModel)]="filtroCategorias" (ngModelChange)="onFiltroCategoriaChange()">
+                <option value="">Todas</option>
+                <option value="true">Ativas</option>
+                <option value="false">Inativas</option>
+              </select>
+            </div>
+            <button class="btn-primary" (click)="onAbrirModalCategoria()">
+              <mat-icon>add</mat-icon> Nova Categoria
+            </button>
+          </div>
         </div>
 
-        <div class="categorias-grid">
-          <div class="categoria-card" *ngFor="let c of categorias" [class.inativa]="!c.ativa">
-            <div class="cat-header">
-              <span class="cat-nome">{{ c.nome }}</span>
-              <span class="badge-ativo"   *ngIf="c.ativa">Ativa</span>
-              <span class="badge-inativo" *ngIf="!c.ativa">Inativa</span>
-            </div>
-            <p class="cat-desc">{{ c.descricao }}</p>
-            <div class="cat-actions">
-              <button class="btn-link btn-danger-link" (click)="onExcluirCategoria(c.nome)">
-                <mat-icon>delete_outline</mat-icon> Excluir
-              </button>
+        <div *ngIf="carregandoCategorias" class="empty-row" style="text-align:center;padding:2rem">
+          Carregando...
+        </div>
+
+        <div *ngIf="!carregandoCategorias">
+          <div class="categorias-grid">
+            <div class="categoria-card" *ngFor="let c of categorias" [class.inativa]="!c.ativo">
+              <div class="cat-header">
+                <span class="cat-nome">{{ c.nome }}</span>
+                <span class="badge-ativo"   *ngIf="c.ativo">Ativa</span>
+                <span class="badge-inativo" *ngIf="!c.ativo">Inativa</span>
+              </div>
+              <p class="cat-desc">{{ c.descricao }}</p>
+              <p class="cat-meta">Criado em {{ c.dataCriacao | date:'dd/MM/yyyy' }}</p>
+              <div class="cat-actions">
+                <button class="btn-link" (click)="onEditarCategoria(c)" matTooltip="Editar nome e descrição">
+                  <mat-icon>edit</mat-icon> Editar
+                </button>
+                <button class="btn-link btn-success-link" *ngIf="!c.ativo"
+                        (click)="onAtivarCategoria(c)" matTooltip="Ativar categoria">
+                  <mat-icon>check_circle_outline</mat-icon> Ativar
+                </button>
+                <button class="btn-link btn-warn-link" *ngIf="c.ativo"
+                        (click)="onDesativarCategoria(c)" matTooltip="Desativar categoria">
+                  <mat-icon>block</mat-icon> Desativar
+                </button>
+                <button class="btn-link btn-danger-link" *ngIf="!c.ativo"
+                        (click)="onExcluirCategoria(c)" matTooltip="Excluir permanentemente">
+                  <mat-icon>delete_outline</mat-icon> Excluir
+                </button>
+              </div>
             </div>
           </div>
+
+          <div *ngIf="!categorias.length" class="empty-row" style="padding:2.5rem;text-align:center">
+            Nenhuma categoria encontrada.
+          </div>
+
+          <app-paginacao
+            [paginaAtual]="paginaAtualCategorias"
+            [totalPaginas]="totalPaginasCategorias"
+            [primeiro]="primeiroCategorias"
+            [ultimo]="ultimoCategorias"
+            (paginaMudou)="onPaginaCategoriasMudou($event)">
+          </app-paginacao>
         </div>
       </div>
 
@@ -379,22 +420,85 @@
   </div>
 </div>
 
-<!-- Modal: Nova Categoria -->
+<!-- Modal: Criar / Editar Categoria -->
 <div class="modal-overlay" *ngIf="showModalCategoria" (click)="showModalCategoria = false">
   <div class="modal" (click)="$event.stopPropagation()">
-    <h3 class="modal-title">Nova Categoria</h3>
-    <div class="form-group">
-      <label>Nome</label>
-      <input class="form-input" type="text" [(ngModel)]="novaCategoria.nome" placeholder="Nome da categoria" />
-    </div>
-    <div class="form-group">
-      <label>Descrição</label>
-      <textarea class="form-input form-textarea" [(ngModel)]="novaCategoria.descricao" placeholder="Descrição..."></textarea>
-    </div>
+    <h3 class="modal-title">
+      {{ categoriaModalModo === 'criar' ? 'Nova Categoria' : 'Editar Categoria' }}
+    </h3>
+
+    <form #formCategoria="ngForm" (ngSubmit)="onSalvarCategoria(formCategoria)" novalidate>
+
+      <div class="form-group">
+        <label>Nome <span class="required">*</span></label>
+        <input class="form-input"
+               [class.input-error]="nomeCatRef.invalid && (nomeCatRef.touched || modalCategoriaSubmitted)"
+               type="text"
+               [(ngModel)]="novaCategoria.nome"
+               name="nomeCat"
+               #nomeCatRef="ngModel"
+               required
+               maxlength="100"
+               placeholder="Nome da categoria" />
+        <app-field-error [errors]="nomeCatRef.errors" [touched]="nomeCatRef.touched" [submitted]="modalCategoriaSubmitted"></app-field-error>
+      </div>
+
+      <div class="form-group">
+        <label>Descrição <span class="required">*</span></label>
+        <textarea class="form-input form-textarea"
+                  [class.input-error]="descCatRef.invalid && (descCatRef.touched || modalCategoriaSubmitted)"
+                  [(ngModel)]="novaCategoria.descricao"
+                  name="descricaoCat"
+                  #descCatRef="ngModel"
+                  required
+                  maxlength="500"
+                  placeholder="Descreva o tipo de solicitação coberto por esta categoria...">
+        </textarea>
+        <app-field-error [errors]="descCatRef.errors" [touched]="descCatRef.touched" [submitted]="modalCategoriaSubmitted"></app-field-error>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" type="button" (click)="showModalCategoria = false">Cancelar</button>
+        <button class="btn-primary" type="submit">
+          <mat-icon>{{ categoriaModalModo === 'criar' ? 'add' : 'save' }}</mat-icon>
+          {{ categoriaModalModo === 'criar' ? 'Criar' : 'Salvar' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Confirmar Desativar Categoria -->
+<div class="modal-overlay" *ngIf="showModalConfirmDesativarCategoria" (click)="showModalConfirmDesativarCategoria = false">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">Desativar Categoria</h3>
+    <p class="modal-body">
+      Tem certeza que deseja desativar <strong>{{ confirmCategoriaTarget?.nome }}</strong>?
+      A categoria não aparecerá nos selects de novas solicitações.
+    </p>
     <div class="modal-actions">
-      <button class="btn-outline" (click)="showModalCategoria = false">Cancelar</button>
-      <button class="btn-primary" (click)="onCriarCategoria()">
-        <mat-icon>add</mat-icon> Criar
+      <button class="btn-outline" (click)="showModalConfirmDesativarCategoria = false">Cancelar</button>
+      <button class="btn-danger" (click)="confirmarDesativarCategoria()">
+        <mat-icon>block</mat-icon> Desativar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar Exclusão de Categoria -->
+<div class="modal-overlay" *ngIf="showModalConfirmExcluirCategoria" (click)="showModalConfirmExcluirCategoria = false">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-warning-icon"><mat-icon>warning_amber</mat-icon></div>
+    <h3 class="modal-title">Excluir Categoria</h3>
+    <p class="modal-body">
+      Tem certeza que deseja excluir permanentemente <strong>{{ confirmCategoriaTarget?.nome }}</strong>?
+      Esta ação não pode ser desfeita.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-outline" (click)="showModalConfirmExcluirCategoria = false">Cancelar</button>
+      <button class="btn-danger" (click)="confirmarExclusaoCategoria()">
+        <mat-icon>delete</mat-icon> Excluir
       </button>
     </div>
   </div>

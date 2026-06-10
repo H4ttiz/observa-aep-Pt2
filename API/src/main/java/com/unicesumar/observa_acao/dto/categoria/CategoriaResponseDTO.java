@@ -1,16 +1,14 @@
 package com.unicesumar.observa_acao.dto.categoria;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDateTime;
 
-@Getter @Setter
-public class CategoriaResponseDTO {
-
-    private Long id;
-
-    private String nome;
-
-    private String descricao;
-
-    private Boolean ativa;
+public record CategoriaResponseDTO(
+        Long id,
+        String nome,
+        String descricao,
+        Boolean ativo,
+        LocalDateTime dataCriacao,
+        Long criadoPorId,
+        String criadoPorNome
+) {
 }
