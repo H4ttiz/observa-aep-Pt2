@@ -53,6 +53,9 @@ public class Usuario implements UserDetails {
     @JoinColumn(name = "criado_por")
     private Usuario criadoPor;
 
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private EnderecoUsuario enderecoUsuario;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + tipoUsuario.name()));

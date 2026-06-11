@@ -65,6 +65,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/uploads/**").permitAll()
+                        // CEP proxy — acessível sem autenticação (usado no cadastro)
+                        .requestMatchers(HttpMethod.GET, "/api/cep/**").permitAll()
                         // /usuarios/perfil e /usuarios/perfil/foto — qualquer usuário autenticado
                         .requestMatchers(HttpMethod.GET,   "/usuarios/perfil").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/usuarios/perfil").authenticated()

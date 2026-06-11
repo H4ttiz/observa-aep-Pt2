@@ -409,6 +409,10 @@
         <app-field-error [errors]="tipoRef.errors" [touched]="tipoRef.touched" [submitted]="modalSubmitted"></app-field-error>
       </div>
 
+      <div class="form-group">
+        <app-endereco-usuario-form [submitted]="modalSubmitted"></app-endereco-usuario-form>
+      </div>
+
       <div class="modal-actions">
         <button class="btn-outline" type="button" (click)="showModalUsuario = false">Cancelar</button>
         <button class="btn-primary" type="submit">

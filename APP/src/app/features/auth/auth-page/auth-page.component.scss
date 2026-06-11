@@ -374,6 +374,15 @@ mat-form-field {
   }
 }
 
+// Bloco de endereço dentro do form de cadastro
+.endereco-row {
+  margin-bottom: 0.75rem;
+
+  app-endereco-usuario-form {
+    width: 100%;
+  }
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Responsividade
 // ──────────────────────────────────────────────────────────────────────
