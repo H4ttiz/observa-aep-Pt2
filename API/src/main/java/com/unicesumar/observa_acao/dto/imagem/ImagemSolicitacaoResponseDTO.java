@@ -1,4 +1,10 @@
 package com.unicesumar.observa_acao.dto.imagem;
 
-public record ImagemSolicitacaoResponseDTO() {
+import java.time.LocalDateTime;
+
+public record ImagemSolicitacaoResponseDTO(
+        Long id,
+        String url,
+        LocalDateTime dataUpload
+) {
 }

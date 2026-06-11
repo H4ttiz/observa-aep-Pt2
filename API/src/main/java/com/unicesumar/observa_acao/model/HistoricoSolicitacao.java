@@ -1,5 +1,6 @@
 package com.unicesumar.observa_acao.model;
 
+import com.unicesumar.observa_acao.enums.StatusSolicitacao;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,23 +18,25 @@ public class HistoricoSolicitacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_solicitacao", nullable = false)
     private Solicitacao solicitacao;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status_anterior")
-    private String statusAnterior;
+    private StatusSolicitacao statusAnterior;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status_novo", nullable = false)
-    private String statusNovo;
+    private StatusSolicitacao statusNovo;
 
-    @Column(nullable = false)
-    private String comentario;
+    @Column(name = "comentario")
+    private String observacao;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_responsavel")
     private Usuario responsavel;
 
     @Column(name = "data_mudanca", nullable = false)
-    private LocalDateTime dataMudanca;
+    private LocalDateTime dataAlteracao;
 }

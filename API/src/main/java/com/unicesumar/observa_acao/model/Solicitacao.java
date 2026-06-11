@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "solicitacoes")
@@ -22,19 +24,11 @@ public class Solicitacao {
     @Column(nullable = false)
     private String titulo;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
-    @ManyToOne
-    @JoinColumn(name = "id_solicitante")
-    private Usuario solicitante;
-
-    @ManyToOne
-    @JoinColumn(name = "id_categoria", nullable = false)
-    private Categoria categoria;
-
-    @OneToOne
-    @JoinColumn(name = "id_endereco", nullable = false)
-    private EnderecoSolicitacao endereco;
+    @Column(nullable = false)
+    private Boolean anonima = false;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -42,10 +36,6 @@ public class Solicitacao {
 
     @Enumerated(EnumType.STRING)
     private NivelPrioridade prioridade;
-
-    @ManyToOne
-    @JoinColumn(name = "id_atendente")
-    private Usuario atendente;
 
     @Column(name = "data_abertura", nullable = false)
     private LocalDateTime dataAbertura;
@@ -55,4 +45,27 @@ public class Solicitacao {
 
     @Column(name = "data_finalizacao")
     private LocalDateTime dataFinalizacao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_solicitante")
+    private Usuario solicitante;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_atendente")
+    private Usuario atendente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_categoria", nullable = false)
+    private Categoria categoria;
+
+    @OneToOne(mappedBy = "solicitacao", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private EnderecoSolicitacao enderecoSolicitacao;
+
+    @OneToMany(mappedBy = "solicitacao", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("dataUpload ASC")
+    private List<ImagemSolicitacao> imagens = new ArrayList<>();
+
+    @OneToMany(mappedBy = "solicitacao", cascade = CascadeType.ALL)
+    @OrderBy("dataAlteracao ASC")
+    private List<HistoricoSolicitacao> historicos = new ArrayList<>();
 }
