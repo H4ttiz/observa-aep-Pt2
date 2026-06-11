@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgClass, NgIf } from '@angular/common';
 import {
   AbstractControl,
@@ -17,6 +17,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
 import { CadastroRequest, LoginRequest } from '../../../core/models/auth.model';
+import { EnderecoUsuarioFormComponent } from '../../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
 
 function cpfValidator(ctrl: AbstractControl): ValidationErrors | null {
   const raw = (ctrl.value ?? '').replace(/\D/g, '');
@@ -43,16 +44,20 @@ function cpfValidator(ctrl: AbstractControl): ValidationErrors | null {
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    EnderecoUsuarioFormComponent
   ],
   templateUrl: './auth-page.component.html',
   styleUrl: './auth-page.component.scss'
 })
 export class AuthPageComponent implements OnInit {
+  @ViewChild(EnderecoUsuarioFormComponent) enderecoForm?: EnderecoUsuarioFormComponent;
+
   isLogin = true;
   isLoading = false;
   showSenhaLogin = false;
   showSenhaCadastro = false;
+  cadastroSubmitted = false;
 
   loginForm!: FormGroup;
   cadastroForm!: FormGroup;
@@ -88,6 +93,7 @@ export class AuthPageComponent implements OnInit {
     this.isLogin = !this.isLogin;
     this.loginForm.reset();
     this.cadastroForm.reset();
+    this.cadastroSubmitted = false;
     this.isLoading = false;
   }
 
@@ -142,7 +148,10 @@ export class AuthPageComponent implements OnInit {
   }
 
   onCadastro(): void {
-    if (this.cadastroForm.invalid || this.isLoading) {
+    this.cadastroSubmitted = true;
+    this.enderecoForm?.markAllAsTouched();
+
+    if (this.cadastroForm.invalid || !this.enderecoForm?.valid || this.isLoading) {
       this.cadastroForm.markAllAsTouched();
       return;
     }
@@ -151,17 +160,19 @@ export class AuthPageComponent implements OnInit {
 
     const raw = this.cadastroForm.getRawValue();
     const payload: CadastroRequest = {
-      nome:    raw.nome.trim(),
-      email:   raw.email.trim().toLowerCase(),
-      senha:   raw.senha,
-      cpf:     raw.cpf.replace(/\D/g, ''),
-      celular: raw.celular?.replace(/\D/g, '') || null
+      nome:             raw.nome.trim(),
+      email:            raw.email.trim().toLowerCase(),
+      senha:            raw.senha,
+      cpf:              raw.cpf.replace(/\D/g, ''),
+      celular:          raw.celular?.replace(/\D/g, '') || null,
+      enderecoUsuario:  this.enderecoForm!.value
     };
 
     this.authService.cadastrar(payload).subscribe({
       next: () => {
         this.isLoading = false;
         this.cadastroForm.enable();
+        this.cadastroSubmitted = false;
         this.snack('Conta criada com sucesso! Faça login para continuar.', 'snack-success');
         this.toggleMode();
       },

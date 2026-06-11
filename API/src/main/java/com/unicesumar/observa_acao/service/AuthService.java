@@ -4,13 +4,18 @@ import com.unicesumar.observa_acao.dto.auth.CidadaoRequestDTO;
 import com.unicesumar.observa_acao.dto.auth.LoginRequestDTO;
 import com.unicesumar.observa_acao.dto.auth.LoginResponseDTO;
 import com.unicesumar.observa_acao.dto.auth.RefreshTokenRequestDTO;
+import com.unicesumar.observa_acao.dto.endereco.EnderecoUsuarioRequestDTO;
 import com.unicesumar.observa_acao.dto.usuario.UsuarioResponseDTO;
+import com.unicesumar.observa_acao.enums.TipoLog;
 import com.unicesumar.observa_acao.enums.TipoUsuario;
 import com.unicesumar.observa_acao.exception.NotFoundException;
 import com.unicesumar.observa_acao.exception.RegraDeNegocioException;
+import com.unicesumar.observa_acao.mapper.EnderecoUsuarioMapper;
 import com.unicesumar.observa_acao.mapper.UsuarioMapper;
+import com.unicesumar.observa_acao.model.EnderecoUsuario;
 import com.unicesumar.observa_acao.model.RefreshToken;
 import com.unicesumar.observa_acao.model.Usuario;
+import com.unicesumar.observa_acao.repository.EnderecoUsuarioRepository;
 import com.unicesumar.observa_acao.repository.UsuarioRepository;
 import com.unicesumar.observa_acao.util.CpfUtil;
 import com.unicesumar.observa_acao.util.FotoUrlHelper;
@@ -30,11 +35,14 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
+    private final EnderecoUsuarioRepository enderecoUsuarioRepository;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
+    private final EnderecoUsuarioMapper enderecoUsuarioMapper;
     private final FotoUrlHelper fotoUrlHelper;
+    private final LogService logService;
 
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO dto) {
@@ -113,6 +121,23 @@ public class AuthService {
 
         Usuario salvo = usuarioRepository.save(usuario);
 
+        EnderecoUsuario endereco = criarEnderecoParaCidadao(dto.enderecoUsuario(), salvo);
+        salvo.setEnderecoUsuario(endereco);
+        logService.registrar(TipoLog.CRIACAO, "Endereço cadastrado para o usuário ID " + salvo.getId(), salvo);
+
         return usuarioMapper.toResponseDTO(salvo);
+    }
+
+    private EnderecoUsuario criarEnderecoParaCidadao(EnderecoUsuarioRequestDTO dto, Usuario usuario) {
+        EnderecoUsuario endereco = enderecoUsuarioMapper.toEntity(dto);
+        endereco.setCep(dto.cep().replaceAll("[^\\d]", ""));
+        endereco.setLogradouro(dto.logradouro().trim());
+        endereco.setNumero(dto.numero().trim());
+        endereco.setBairro(dto.bairro().trim());
+        endereco.setCidade(dto.cidade().trim());
+        endereco.setEstado(dto.estado().toUpperCase().trim());
+        endereco.setComplemento(dto.complemento() != null ? dto.complemento().trim() : null);
+        endereco.setUsuario(usuario);
+        return enderecoUsuarioRepository.save(endereco);
     }
 }

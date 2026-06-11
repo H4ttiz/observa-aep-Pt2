@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgIf, NgFor, NgClass, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -20,6 +20,7 @@ import { SolicitacaoDetalhesComponent } from '../../../shared/components/solicit
 import { PasswordInputComponent } from '../../../shared/components/password-input/password-input.component';
 import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
 import { PaginacaoComponent } from '../../../shared/components/paginacao/paginacao.component';
+import { EnderecoUsuarioFormComponent } from '../../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
 import { LogService } from '../../../core/services/log.service';
 import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
 
@@ -31,12 +32,15 @@ import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
     MatIconModule, MatButtonModule, MatTooltipModule,
     NavbarTopComponent, NavbarLateralComponent,
     StatusBadgeComponent, SolicitacaoDetalhesComponent,
-    PasswordInputComponent, FieldErrorComponent, PaginacaoComponent
+    PasswordInputComponent, FieldErrorComponent, PaginacaoComponent,
+    EnderecoUsuarioFormComponent
   ],
   templateUrl: './dashboard-admin.component.html',
   styleUrl: './dashboard-admin.component.scss'
 })
 export class DashboardAdminComponent implements OnInit {
+
+  @ViewChild(EnderecoUsuarioFormComponent) enderecoFormModal?: EnderecoUsuarioFormComponent;
 
   nome = this.auth.getNomeUsuario() ?? 'Administrador';
   loggedUserId = this.auth.getUserId();
@@ -217,8 +221,13 @@ export class DashboardAdminComponent implements OnInit {
 
   onCriarUsuario(formRef: any): void {
     this.modalSubmitted = true;
-    if (formRef.invalid) return;
-    this.usuarioService.criar(this.novoUsuario).subscribe({
+    this.enderecoFormModal?.markAllAsTouched();
+
+    if (formRef.invalid || !this.enderecoFormModal?.valid) return;
+
+    const payload = { ...this.novoUsuario, enderecoUsuario: this.enderecoFormModal!.value };
+
+    this.usuarioService.criar(payload).subscribe({
       next: () => {
         this.showModalUsuario = false;
         this.toast.success('Usuário criado com sucesso!');

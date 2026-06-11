@@ -167,6 +167,10 @@
               </mat-form-field>
             </div>
 
+            <div class="field-row endereco-row">
+              <app-endereco-usuario-form [submitted]="cadastroSubmitted"></app-endereco-usuario-form>
+            </div>
+
             <button mat-flat-button class="submit-btn" type="submit"
                     [disabled]="isLoading" aria-label="Criar conta">
               <span class="btn-inner">

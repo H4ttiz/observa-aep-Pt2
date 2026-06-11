@@ -1,7 +1,10 @@
 package com.unicesumar.observa_acao.dto.auth;
 
+import com.unicesumar.observa_acao.dto.endereco.EnderecoUsuarioRequestDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record CidadaoRequestDTO(
 
@@ -17,6 +20,9 @@ public record CidadaoRequestDTO(
         @NotBlank
         String cpf,
 
-        String celular
+        String celular,
+
+        @NotNull @Valid
+        EnderecoUsuarioRequestDTO enderecoUsuario
 ) {
 }

@@ -1,5 +1,7 @@
 package com.unicesumar.observa_acao.dto.usuario;
 
+import com.unicesumar.observa_acao.dto.endereco.EnderecoUsuarioRequestDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 
 public record UsuarioSelfUpdateDTO(
@@ -13,6 +15,9 @@ public record UsuarioSelfUpdateDTO(
         @Size(min = 8)
         String novaSenha,
 
-        String confirmarNovaSenha
+        String confirmarNovaSenha,
+
+        @Valid
+        EnderecoUsuarioRequestDTO enderecoUsuario
 ) {
 }
