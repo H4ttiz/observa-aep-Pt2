@@ -51,6 +51,34 @@ export const routes: Routes = [
     data: { roles: ['ADMINISTRADOR'] }
   },
   {
+    path: 'dashboard/cidadao/solicitacoes/:id',
+    loadComponent: () =>
+      import('./features/solicitacoes/detalhe/detalhe-solicitacao.component').then(m => m.DetalheSolicitacaoComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['CIDADAO'] }
+  },
+  {
+    path: 'dashboard/gestor/solicitacoes/:id',
+    loadComponent: () =>
+      import('./features/solicitacoes/detalhe/detalhe-solicitacao.component').then(m => m.DetalheSolicitacaoComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['GESTOR'] }
+  },
+  {
+    path: 'dashboard/atendente/solicitacoes/:id',
+    loadComponent: () =>
+      import('./features/solicitacoes/detalhe/detalhe-solicitacao.component').then(m => m.DetalheSolicitacaoComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ATENDENTE'] }
+  },
+  {
+    path: 'dashboard/admin/solicitacoes/:id',
+    loadComponent: () =>
+      import('./features/solicitacoes/detalhe/detalhe-solicitacao.component').then(m => m.DetalheSolicitacaoComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMINISTRADOR'] }
+  },
+  {
     path: 'perfil',
     loadComponent: () =>
       import('./features/perfil/perfil.component').then(m => m.PerfilComponent),

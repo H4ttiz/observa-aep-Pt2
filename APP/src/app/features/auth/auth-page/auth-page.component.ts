@@ -97,10 +97,6 @@ export class AuthPageComponent implements OnInit {
     this.isLoading = false;
   }
 
-  // ──────────────────────────────
-  // Masks
-  // ──────────────────────────────
-
   aplicarMascaraCpf(event: Event): void {
     const el = event.target as HTMLInputElement;
     let v = el.value.replace(/\D/g, '').slice(0, 11);
@@ -121,10 +117,6 @@ export class AuthPageComponent implements OnInit {
     this.cadastroForm.get('celular')!.setValue(v, { emitEvent: false });
     el.value = v;
   }
-
-  // ──────────────────────────────
-  // Submit handlers
-  // ──────────────────────────────
 
   onLogin(): void {
     if (this.loginForm.invalid || this.isLoading) {
@@ -184,10 +176,6 @@ export class AuthPageComponent implements OnInit {
       }
     });
   }
-
-  // ──────────────────────────────
-  // Error helpers
-  // ──────────────────────────────
 
   loginErr(field: string): string {
     const c = this.loginForm.get(field);

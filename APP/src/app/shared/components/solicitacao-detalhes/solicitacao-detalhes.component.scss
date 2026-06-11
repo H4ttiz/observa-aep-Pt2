@@ -271,6 +271,33 @@ $red:      #DC2626;
   }
 }
 
+// Imagens
+.imagens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.imagem-thumb {
+  display: block;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid $border;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s;
+  }
+
+  &:hover img { transform: scale(1.05); }
+}
+
+.timeline-responsavel { color: $muted; font-size: 0.75rem; }
+
 // ── Footer ──
 .drawer-footer {
   border-top: 1px solid $border;

@@ -106,7 +106,7 @@
           <p class="page-subtitle">Visão completa incluindo dados restritos</p>
         </div>
 
-        <div class="table-card">
+        <div class="table-card" id="solicitacoes-tab">
           <table class="data-table">
             <thead>
               <tr>
@@ -123,13 +123,13 @@
               <tr *ngFor="let s of solicitacoes">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
+                <td>{{ s.categoriaNome }}</td>
                 <td><app-status-badge [status]="s.status"></app-status-badge></td>
                 <td>
-                  <span *ngIf="s.anonimo" class="badge-anonimo-admin">
+                  <span *ngIf="s.anonima && s.solicitanteNome === 'Anônimo'" class="badge-anonimo-admin">
                     <mat-icon>person_off</mat-icon> Anônimo
                   </span>
-                  <span *ngIf="!s.anonimo">{{ s.solicitante?.nome ?? '—' }}</span>
+                  <span *ngIf="!(s.anonima && s.solicitanteNome === 'Anônimo')">{{ s.solicitanteNome }}</span>
                 </td>
                 <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
                 <td>
@@ -138,8 +138,18 @@
                   </button>
                 </td>
               </tr>
+              <tr *ngIf="!carregandoSolicitacoes && !solicitacoes.length">
+                <td colspan="7" class="empty-row">Nenhuma solicitação encontrada.</td>
+              </tr>
             </tbody>
           </table>
+          <app-paginacao
+            [paginaAtual]="paginaAtualSolicits"
+            [totalPaginas]="totalPaginasSolicits"
+            [primeiro]="primeiroSolicits"
+            [ultimo]="ultimoSolicits"
+            (paginaMudou)="onPaginaSolicitsMudou($event)">
+          </app-paginacao>
         </div>
       </div>
 
@@ -298,19 +308,6 @@
     </main>
   </div>
 </div>
-
-<!-- Drawer de detalhes -->
-<app-solicitacao-detalhes
-  *ngIf="selectedSolicitacao"
-  [solicitacao]="selectedSolicitacao"
-  [mostrarDadosSolicitante]="true"
-  (fechar)="selectedSolicitacao = null">
-  <button class="btn-danger" (click)="onRemoverAnonimato()"
-          *ngIf="selectedSolicitacao?.anonimo">
-    <mat-icon>no_accounts</mat-icon> Remover Anonimato
-  </button>
-  <button class="btn-outline" (click)="selectedSolicitacao = null">Fechar</button>
-</app-solicitacao-detalhes>
 
 <!-- Modal: Criar Usuário -->
 <div class="modal-overlay" *ngIf="showModalUsuario" (click)="showModalUsuario = false">
@@ -537,25 +534,6 @@
       <button class="btn-outline" (click)="showModalConfirmDelete = false">Cancelar</button>
       <button class="btn-danger" (click)="confirmarExclusao()">
         <mat-icon>delete</mat-icon> Excluir
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Remover Anonimato -->
-<div class="modal-overlay" *ngIf="showModalRemoverAnonimato" (click)="showModalRemoverAnonimato = false">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-warning-icon"><mat-icon>warning_amber</mat-icon></div>
-    <h3 class="modal-title">Remover Anonimato</h3>
-    <p class="modal-body">
-      Esta ação é restrita a casos de <strong>investigação</strong> ou <strong>exceções governamentais</strong>.
-      Ao confirmar, os dados do solicitante serão revelados e a ação será registrada nos logs do sistema.
-      <br><br>Confirmar?
-    </p>
-    <div class="modal-actions">
-      <button class="btn-outline" (click)="showModalRemoverAnonimato = false">Cancelar</button>
-      <button class="btn-danger" (click)="confirmarRemoverAnonimato()">
-        <mat-icon>no_accounts</mat-icon> Confirmar
       </button>
     </div>
   </div>
