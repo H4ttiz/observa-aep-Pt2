@@ -14,20 +14,20 @@
         </div>
 
         <div class="stats-grid">
-          <div class="stat-card">
+          <div class="stat-card" (click)="setTab('fila')" style="cursor:pointer">
             <mat-icon class="stat-icon">inbox</mat-icon>
-            <span class="stat-label">Aguardando Atendimento</span>
+            <span class="stat-label">Na Fila</span>
             <span class="stat-value">{{ totalAguardando }}</span>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" (click)="setTab('minhas')" style="cursor:pointer">
             <mat-icon class="stat-icon">pending_actions</mat-icon>
             <span class="stat-label">Em Andamento</span>
             <span class="stat-value">{{ totalEmAndamento }}</span>
           </div>
-          <div class="stat-card">
-            <mat-icon class="stat-icon">check_circle_outline</mat-icon>
-            <span class="stat-label">Finalizadas</span>
-            <span class="stat-value">{{ totalFinalizadas }}</span>
+          <div class="stat-card stat-green" (click)="setTab('finalizadas')" style="cursor:pointer">
+            <mat-icon class="stat-icon">check_circle</mat-icon>
+            <span class="stat-label">Finalizadas por Mim</span>
+            <span class="stat-value">{{ totalConcluidas }}</span>
           </div>
         </div>
 
@@ -35,8 +35,7 @@
           <mat-icon>info_outline</mat-icon>
           <p>
             Acesse a <strong>Fila de Atendimento</strong> para visualizar solicitações aprovadas pelo gestor
-            e aguardando um atendente. Em <strong>Minhas Solicitações</strong> você acompanha os casos
-            que já assumiu.
+            e assumir novos casos. Em <strong>Minhas Solicitações</strong> você gerencia os casos em andamento.
           </p>
         </div>
       </div>
@@ -61,23 +60,21 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of filaExibida">
+              <tr *ngFor="let s of filaAtendimento">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
-                <td>
-                  <app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge>
-                </td>
-                <td [class.prazo-atrasado]="s.atrasada">
+                <td>{{ s.categoriaNome }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
+                <td [class.prazo-atrasado]="estaAtrasada(s)">
                   {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
                 </td>
-                <td>
+                <td class="acoes-col">
                   <button class="btn-link" (click)="verDetalhes(s)">
-                    <mat-icon>open_in_new</mat-icon> Ver Detalhes
+                    <mat-icon>open_in_new</mat-icon> Ver
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="!filaAtendimento.length">
+              <tr *ngIf="!carregando && !filaAtendimento.length">
                 <td colspan="6" class="empty-row">Nenhuma solicitação na fila.</td>
               </tr>
             </tbody>
@@ -87,7 +84,7 @@
             [totalPaginas]="totalPaginasFila"
             [primeiro]="primeiroFila"
             [ultimo]="ultimoFila"
-            (paginaMudou)="onPaginaFilaMudou($event)">
+            (paginaMudou)="carregarFila($event)">
           </app-paginacao>
         </div>
       </div>
@@ -96,7 +93,7 @@
       <div *ngIf="activeTab === 'minhas'" class="tab-content" id="minhas-atendente-section">
         <div class="page-header">
           <h2>Minhas Solicitações</h2>
-          <p class="page-subtitle">Casos que você assumiu</p>
+          <p class="page-subtitle">Casos que você está atendendo</p>
         </div>
 
         <div class="table-card">
@@ -113,23 +110,23 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of minhasExibidas" [class.row-atrasada]="s.atrasada">
+              <tr *ngFor="let s of minhasSolicitacoes" [class.row-atrasada]="estaAtrasada(s)">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
-                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
+                <td>{{ s.categoriaNome }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
                 <td><app-status-badge [status]="s.status"></app-status-badge></td>
-                <td [class.prazo-atrasado]="s.atrasada">
+                <td [class.prazo-atrasado]="estaAtrasada(s)">
                   {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
-                  <span *ngIf="s.atrasada" class="tag-atraso">Atrasada</span>
+                  <span *ngIf="estaAtrasada(s)" class="tag-atraso">Atrasada</span>
                 </td>
                 <td>
                   <button class="btn-link" (click)="verDetalhes(s)">
-                    <mat-icon>open_in_new</mat-icon> Ver Detalhes
+                    <mat-icon>open_in_new</mat-icon> Ver
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="!minhasSolicitacoes.length">
+              <tr *ngIf="!carregando && !minhasSolicitacoes.length">
                 <td colspan="7" class="empty-row">Nenhuma solicitação atribuída.</td>
               </tr>
             </tbody>
@@ -139,7 +136,56 @@
             [totalPaginas]="totalPaginasMinhas"
             [primeiro]="primeiroMinhas"
             [ultimo]="ultimoMinhas"
-            (paginaMudou)="onPaginaMinhasMudou($event)">
+            (paginaMudou)="carregarMinhas($event)">
+          </app-paginacao>
+        </div>
+      </div>
+
+      <!-- ══ FINALIZADAS POR MIM ══ -->
+      <div *ngIf="activeTab === 'finalizadas'" class="tab-content">
+        <div class="page-header">
+          <h2>Finalizadas por Mim</h2>
+          <p class="page-subtitle">{{ totalFinalizadas }} solicitação(ões) concluída(s) por você</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Prioridade</th>
+                <th>Abertura</th>
+                <th>Finalização</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of finalizadasList">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoriaNome }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
+                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td>{{ s.dataFinalizacao ? (s.dataFinalizacao | date:'dd/MM/yyyy') : '—' }}</td>
+                <td>
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!carregando && !finalizadasList.length">
+                <td colspan="7" class="empty-row good">Nenhuma solicitação finalizada por você ainda.</td>
+              </tr>
+            </tbody>
+          </table>
+          <app-paginacao
+            [paginaAtual]="paginaFinalizadas"
+            [totalPaginas]="totalPaginasFinalizadas"
+            [primeiro]="primeiroFinalizadas"
+            [ultimo]="ultimoFinalizadas"
+            (paginaMudou)="carregarFinalizadas($event)">
           </app-paginacao>
         </div>
       </div>
@@ -147,15 +193,3 @@
     </main>
   </div>
 </div>
-
-<!-- Drawer de detalhes -->
-<app-solicitacao-detalhes
-  *ngIf="selectedSolicitacao"
-  [solicitacao]="selectedSolicitacao"
-  [mostrarDadosSolicitante]="false"
-  (fechar)="selectedSolicitacao = null">
-  <button class="btn-success" (click)="onPuxarAtendimento()">
-    <mat-icon>assignment_ind</mat-icon>Puxar Atendimento
-  </button>
-  <button class="btn-outline" (click)="selectedSolicitacao = null">Fechar</button>
-</app-solicitacao-detalhes>
