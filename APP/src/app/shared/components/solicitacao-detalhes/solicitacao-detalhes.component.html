@@ -18,11 +18,11 @@
 
     <div class="info-grid">
 
-      <div class="info-item" *ngIf="solicitacao.categoria">
+      <div class="info-item" *ngIf="solicitacao.categoriaNome">
         <mat-icon>label_outline</mat-icon>
         <div>
           <span class="info-label">Categoria</span>
-          <span class="info-value">{{ solicitacao.categoria }}</span>
+          <span class="info-value">{{ solicitacao.categoriaNome }}</span>
         </div>
       </div>
 
@@ -46,9 +46,9 @@
         <mat-icon>event</mat-icon>
         <div>
           <span class="info-label">Prazo</span>
-          <span class="info-value" [class.atrasada]="solicitacao.atrasada">
+          <span class="info-value" [class.atrasada]="estaAtrasada()">
             {{ solicitacao.dataPrazo | date:'dd/MM/yyyy' }}
-            <span *ngIf="solicitacao.atrasada" class="tag-atrasada">Atrasada</span>
+            <span *ngIf="estaAtrasada()" class="tag-atrasada">Atrasada</span>
           </span>
         </div>
       </div>
@@ -63,83 +63,74 @@
 
     </div>
 
-    <div class="section" *ngIf="solicitacao.descricao">
+    <div class="section">
       <h4 class="section-title">Descrição</h4>
       <p class="sol-descricao">{{ solicitacao.descricao }}</p>
     </div>
 
-    <div class="section" *ngIf="solicitacao.endereco">
+    <div class="section" *ngIf="solicitacao.enderecoSolicitacao">
       <h4 class="section-title">Localização</h4>
       <p class="sol-descricao">
-        {{ solicitacao.endereco.rua }}, {{ solicitacao.endereco.numero }} —
-        {{ solicitacao.endereco.bairro }}, {{ solicitacao.endereco.cidade }}
+        {{ solicitacao.enderecoSolicitacao.logradouro }}, {{ solicitacao.enderecoSolicitacao.numero }}
+        <ng-container *ngIf="solicitacao.enderecoSolicitacao.complemento">
+          — {{ solicitacao.enderecoSolicitacao.complemento }}
+        </ng-container>
+        — {{ solicitacao.enderecoSolicitacao.bairro }}, {{ solicitacao.enderecoSolicitacao.cidade }}/{{ solicitacao.enderecoSolicitacao.estado }}
       </p>
+      <app-leaflet-map [endereco]="solicitacao.enderecoSolicitacao"></app-leaflet-map>
     </div>
 
-    <div class="section" *ngIf="solicitacao.observacoes">
-      <h4 class="section-title">Observações</h4>
-      <p class="sol-descricao">{{ solicitacao.observacoes }}</p>
-    </div>
-
-    <div class="section" *ngIf="solicitacao.motivoRejeicao">
+    <div class="section" *ngIf="motivoRejeicao">
       <h4 class="section-title rejeicao-title">Motivo da Rejeição</h4>
-      <p class="sol-descricao rejeicao-text">{{ solicitacao.motivoRejeicao }}</p>
+      <p class="sol-descricao rejeicao-text">{{ motivoRejeicao }}</p>
+    </div>
+
+    <!-- Imagens -->
+    <div class="section" *ngIf="solicitacao.imagens?.length">
+      <h4 class="section-title">Imagens</h4>
+      <div class="imagens-grid">
+        <a *ngFor="let img of solicitacao.imagens" [href]="img.url" target="_blank" class="imagem-thumb">
+          <img [src]="img.url" [alt]="'Imagem ' + img.id" />
+        </a>
+      </div>
     </div>
 
     <!-- Pessoas envolvidas -->
     <div class="section pessoas-section">
       <h4 class="section-title">Envolvidos</h4>
 
-      <div class="pessoa-row" *ngIf="solicitacao.anonimo && !mostrarDadosSolicitante">
-        <mat-icon class="pessoa-icon">person_off</mat-icon>
+      <div class="pessoa-row">
+        <mat-icon class="pessoa-icon" *ngIf="!solicitacao.anonima || mostrarDadosSolicitante; else anonIcon">person_outline</mat-icon>
+        <ng-template #anonIcon><mat-icon class="pessoa-icon">person_off</mat-icon></ng-template>
         <div>
           <span class="pessoa-role">Solicitante</span>
-          <span class="pessoa-nome anonimo">Solicitante Anônimo</span>
-        </div>
-      </div>
-
-      <div class="pessoa-row" *ngIf="(!solicitacao.anonimo || mostrarDadosSolicitante) && solicitacao.solicitante">
-        <mat-icon class="pessoa-icon">person_outline</mat-icon>
-        <div>
-          <span class="pessoa-role">Solicitante</span>
-          <span class="pessoa-nome">{{ solicitacao.solicitante!.nome }}</span>
-          <span class="pessoa-email">{{ solicitacao.solicitante!.email }}</span>
-          <span class="pessoa-email" *ngIf="solicitacao.solicitante!.cpf && mostrarDadosSolicitante">
-            CPF: {{ solicitacao.solicitante!.cpf }}
+          <span class="pessoa-nome" [class.anonimo]="solicitacao.anonima && !mostrarDadosSolicitante">
+            {{ solicitacao.solicitanteNome }}
           </span>
         </div>
       </div>
 
-      <div class="pessoa-row" *ngIf="solicitacao.atendente">
+      <div class="pessoa-row" *ngIf="solicitacao.atendenteNome">
         <mat-icon class="pessoa-icon">support_agent</mat-icon>
         <div>
           <span class="pessoa-role">Atendente</span>
-          <span class="pessoa-nome">{{ solicitacao.atendente!.nome }}</span>
-          <span class="pessoa-email">{{ solicitacao.atendente!.email }}</span>
-        </div>
-      </div>
-
-      <div class="pessoa-row" *ngIf="solicitacao.gestor">
-        <mat-icon class="pessoa-icon">manage_accounts</mat-icon>
-        <div>
-          <span class="pessoa-role">Gestor</span>
-          <span class="pessoa-nome">{{ solicitacao.gestor!.nome }}</span>
-          <span class="pessoa-email">{{ solicitacao.gestor!.email }}</span>
+          <span class="pessoa-nome">{{ solicitacao.atendenteNome }}</span>
         </div>
       </div>
     </div>
 
     <!-- Timeline de histórico -->
-    <div class="section" *ngIf="solicitacao.historico && solicitacao.historico.length">
+    <div class="section" *ngIf="solicitacao.historicos?.length">
       <h4 class="section-title">Histórico de Status</h4>
       <div class="timeline">
-        <div class="timeline-item" *ngFor="let h of solicitacao.historico; let last = last">
+        <div class="timeline-item" *ngFor="let h of solicitacao.historicos; let last = last">
           <div class="timeline-dot" [class.last]="last"></div>
           <div class="timeline-line" *ngIf="!last"></div>
           <div class="timeline-content">
             <app-status-badge [status]="h.statusNovo"></app-status-badge>
-            <span class="timeline-date">{{ h.dataMudanca | date:'dd/MM/yyyy HH:mm' }}</span>
-            <p class="timeline-comment">{{ h.comentario }}</p>
+            <span class="timeline-date">{{ h.dataAlteracao | date:'dd/MM/yyyy HH:mm' }}</span>
+            <p class="timeline-comment" *ngIf="h.observacao">{{ h.observacao }}</p>
+            <p class="timeline-comment timeline-responsavel" *ngIf="h.responsavelNome">por {{ h.responsavelNome }}</p>
           </div>
         </div>
       </div>

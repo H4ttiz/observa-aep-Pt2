@@ -1,2 +1,97 @@
-<div class="nova-solicitacao">
-</div>
+<form #formRef="ngForm" (ngSubmit)="onSubmit(formRef)" novalidate>
+
+  <div class="form-group">
+    <label for="titulo">Título <span class="required">*</span></label>
+    <input
+      id="titulo"
+      name="titulo"
+      class="form-input"
+      type="text"
+      placeholder="Ex: Buraco na Rua das Flores"
+      [(ngModel)]="form.titulo"
+      required
+      minlength="5"
+      maxlength="120"
+      #titulo="ngModel" />
+    <app-field-error
+      [errors]="titulo.errors"
+      [touched]="titulo.touched"
+      [dirty]="titulo.dirty"
+      [submitted]="submitted">
+    </app-field-error>
+  </div>
+
+  <div class="form-group">
+    <label for="descricao">Descrição <span class="required">*</span></label>
+    <textarea
+      id="descricao"
+      name="descricao"
+      class="form-input form-textarea"
+      placeholder="Descreva o problema com detalhes..."
+      [(ngModel)]="form.descricao"
+      required
+      minlength="10"
+      #descricao="ngModel">
+    </textarea>
+    <app-field-error
+      [errors]="descricao.errors"
+      [touched]="descricao.touched"
+      [dirty]="descricao.dirty"
+      [submitted]="submitted">
+    </app-field-error>
+  </div>
+
+  <div class="form-group">
+    <label for="categoriaId">Categoria <span class="required">*</span></label>
+    <select
+      id="categoriaId"
+      name="categoriaId"
+      class="form-input form-select"
+      [(ngModel)]="form.categoriaId"
+      required
+      #categoriaId="ngModel">
+      <option [ngValue]="null" disabled>Selecione uma categoria</option>
+      <option *ngFor="let c of categorias" [value]="c.id">{{ c.nome }}</option>
+    </select>
+    <app-field-error
+      [errors]="categoriaId.errors"
+      [touched]="categoriaId.touched"
+      [dirty]="categoriaId.dirty"
+      [submitted]="submitted">
+    </app-field-error>
+  </div>
+
+  <div class="toggle-group">
+    <label class="toggle-label">
+      <input type="checkbox" name="usarEnderecoUsuario" [(ngModel)]="form.usarEnderecoUsuario" />
+      <span class="toggle-text">
+        <mat-icon>home</mat-icon>
+        Usar meu endereço cadastrado
+      </span>
+    </label>
+    <p class="toggle-hint">Se desmarcado, informe o endereço exato do problema.</p>
+  </div>
+
+  <div *ngIf="!form.usarEnderecoUsuario" class="endereco-wrapper">
+    <app-endereco-usuario-form></app-endereco-usuario-form>
+  </div>
+
+  <div class="toggle-group">
+    <label class="toggle-label">
+      <input type="checkbox" name="anonima" [(ngModel)]="form.anonima" />
+      <span class="toggle-text">
+        <mat-icon>person_off</mat-icon>
+        Enviar de forma anônima
+      </span>
+    </label>
+    <p class="toggle-hint">Seu nome não será exibido ao atendente nem ao público.</p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn-primary" [disabled]="enviando">
+      <mat-icon>send</mat-icon>
+      {{ enviando ? 'Enviando...' : 'Enviar Solicitação' }}
+    </button>
+  </div>
+
+</form>

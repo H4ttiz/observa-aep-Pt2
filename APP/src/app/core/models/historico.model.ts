@@ -1,7 +1,9 @@
-export interface HistoricoSolicitacao {
+export interface HistoricoResponse {
   id: number;
   statusAnterior?: string;
   statusNovo: string;
-  comentario: string;
-  dataMudanca: string;
+  observacao?: string;
+  responsavelId: number;
+  responsavelNome: string;
+  dataAlteracao: string;
 }
