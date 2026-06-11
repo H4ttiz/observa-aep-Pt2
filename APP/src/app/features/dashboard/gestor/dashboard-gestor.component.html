@@ -14,30 +14,10 @@
         </div>
 
         <div class="stats-grid">
-          <div class="stat-card stat-amber">
+          <div class="stat-card stat-amber" (click)="setTab('aprovacao')" style="cursor:pointer">
             <mat-icon class="stat-icon">pending_actions</mat-icon>
             <span class="stat-label">Ag. Aprovação</span>
             <span class="stat-value">{{ totalStats.aguardandoAprovacao }}</span>
-          </div>
-          <div class="stat-card stat-teal">
-            <mat-icon class="stat-icon">sync</mat-icon>
-            <span class="stat-label">Em Andamento</span>
-            <span class="stat-value">{{ totalStats.emAndamento }}</span>
-          </div>
-          <div class="stat-card stat-green">
-            <mat-icon class="stat-icon">check_circle_outline</mat-icon>
-            <span class="stat-label">Finalizadas</span>
-            <span class="stat-value">{{ totalStats.finalizadas }}</span>
-          </div>
-          <div class="stat-card stat-red">
-            <mat-icon class="stat-icon">cancel</mat-icon>
-            <span class="stat-label">Rejeitadas</span>
-            <span class="stat-value">{{ totalStats.rejeitadas }}</span>
-          </div>
-          <div class="stat-card stat-orange">
-            <mat-icon class="stat-icon">alarm_off</mat-icon>
-            <span class="stat-label">Atrasadas</span>
-            <span class="stat-value">{{ totalStats.atrasadas }}</span>
           </div>
         </div>
       </div>
@@ -62,14 +42,14 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of aguardandoAprovacaoExibidos">
+              <tr *ngFor="let s of aguardandoAprovacaoList">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
+                <td>{{ s.categoriaNome }}</td>
                 <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
                 <td>
-                  <span class="badge-anonimo" *ngIf="s.anonimo">Anônimo</span>
-                  <span class="badge-identificado" *ngIf="!s.anonimo">Identificado</span>
+                  <span class="badge-anonimo" *ngIf="s.anonima">Anônimo</span>
+                  <span class="badge-identificado" *ngIf="!s.anonima">Identificado</span>
                 </td>
                 <td class="acoes-col">
                   <button class="btn-link" (click)="verDetalhes(s)">
@@ -77,17 +57,17 @@
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="!aguardandoAprovacao.length">
+              <tr *ngIf="!carregando && !aguardandoAprovacaoList.length">
                 <td colspan="6" class="empty-row">Nenhuma solicitação aguardando aprovação.</td>
               </tr>
             </tbody>
           </table>
           <app-paginacao
-            [paginaAtual]="paginaSolicits"
-            [totalPaginas]="totalPaginasSolicits"
-            [primeiro]="primeiroSolicits"
-            [ultimo]="ultimoSolicits"
-            (paginaMudou)="onPaginaSolicitsMudou($event)">
+            [paginaAtual]="paginaAprovacao"
+            [totalPaginas]="totalPaginasAprovacao"
+            [primeiro]="primeiroAprovacao"
+            [ultimo]="ultimoAprovacao"
+            (paginaMudou)="carregarAprovacao($event)">
           </app-paginacao>
         </div>
       </div>
@@ -113,15 +93,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of emAndamentoExibidos" [class.row-atrasada]="s.atrasada">
+              <tr *ngFor="let s of emAndamentoList" [class.row-atrasada]="estaAtrasada(s)">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
-                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
-                <td>{{ s.atendente?.nome ?? '—' }}</td>
-                <td [class.prazo-atrasado]="s.atrasada">
+                <td>{{ s.categoriaNome }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
+                <td>{{ s.atendenteNome ?? '—' }}</td>
+                <td [class.prazo-atrasado]="estaAtrasada(s)">
                   {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
-                  <span *ngIf="s.atrasada" class="tag-atraso">Atrasada</span>
+                  <span *ngIf="estaAtrasada(s)" class="tag-atraso">Atrasada</span>
                 </td>
                 <td>
                   <button class="btn-link" (click)="verDetalhes(s)">
@@ -129,80 +109,17 @@
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="!emAndamento.length">
+              <tr *ngIf="!carregando && !emAndamentoList.length">
                 <td colspan="7" class="empty-row">Nenhuma solicitação em andamento.</td>
               </tr>
             </tbody>
           </table>
           <app-paginacao
-            [paginaAtual]="paginaSolicits"
-            [totalPaginas]="totalPaginasSolicits"
-            [primeiro]="primeiroSolicits"
-            [ultimo]="ultimoSolicits"
-            (paginaMudou)="onPaginaSolicitsMudou($event)">
-          </app-paginacao>
-        </div>
-      </div>
-
-      <!-- ══ MOVIMENTAÇÃO GERAL ══ -->
-      <div *ngIf="activeTab === 'movimentacao'" class="tab-content">
-        <div class="page-header section-header-row">
-          <div>
-            <h2>Movimentação Geral</h2>
-            <p class="page-subtitle">Todas as solicitações do sistema</p>
-          </div>
-          <div class="filtro-wrap">
-            <label>Filtrar por status:</label>
-            <select class="form-input form-select" [(ngModel)]="filtroStatus" (ngModelChange)="onFiltroStatusChange()">
-              <option value="">Todos</option>
-              <option value="AGUARDANDO_APROVACAO">Ag. Aprovação</option>
-              <option value="APROVADA">Aprovada</option>
-              <option value="AGUARDANDO_ATENDENTE">Ag. Atendente</option>
-              <option value="EM_ANDAMENTO">Em Andamento</option>
-              <option value="FINALIZADA">Finalizada</option>
-              <option value="REJEITADA">Rejeitada</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="table-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Título</th>
-                <th>Categoria</th>
-                <th>Status</th>
-                <th>Prioridade</th>
-                <th>Data</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let s of solicitacoesFiltradasExibidas" [class.row-atrasada]="s.atrasada">
-                <td class="col-id">#{{ s.id }}</td>
-                <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
-                <td><app-status-badge [status]="s.status"></app-status-badge></td>
-                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
-                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
-                <td>
-                  <button class="btn-link" (click)="verDetalhes(s)">
-                    <mat-icon>open_in_new</mat-icon> Ver
-                  </button>
-                </td>
-              </tr>
-              <tr *ngIf="!solicitacoesFiltradas.length">
-                <td colspan="7" class="empty-row">Nenhuma solicitação encontrada.</td>
-              </tr>
-            </tbody>
-          </table>
-          <app-paginacao
-            [paginaAtual]="paginaSolicits"
-            [totalPaginas]="totalPaginasSolicits"
-            [primeiro]="primeiroSolicits"
-            [ultimo]="ultimoSolicits"
-            (paginaMudou)="onPaginaSolicitsMudou($event)">
+            [paginaAtual]="paginaAndamento"
+            [totalPaginas]="totalPaginasAndamento"
+            [primeiro]="primeiroAndamento"
+            [ultimo]="ultimoAndamento"
+            (paginaMudou)="carregarAndamento($event)">
           </app-paginacao>
         </div>
       </div>
@@ -214,9 +131,9 @@
           <p class="page-subtitle">Passaram do prazo e ainda não foram finalizadas</p>
         </div>
 
-        <div class="alerta-banner" *ngIf="atrasadas.length">
+        <div class="alerta-banner" *ngIf="atrasadasList.length">
           <mat-icon>warning_amber</mat-icon>
-          <span>{{ atrasadas.length }} solicitação(ões) com prazo vencido!</span>
+          <span>{{ atrasadasList.length }} solicitação(ões) com prazo vencido!</span>
         </div>
 
         <div class="table-card">
@@ -236,27 +153,27 @@
               <tr *ngFor="let s of atrasadasExibidas" class="row-atrasada-hard">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
-                <td><app-status-badge [prioridade]="s.prioridade || 'BAIXA'"></app-status-badge></td>
+                <td>{{ s.categoriaNome }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
                 <td class="prazo-atrasado">{{ s.dataPrazo | date:'dd/MM/yyyy' }}</td>
-                <td>{{ s.atendente?.nome ?? 'Não atribuído' }}</td>
+                <td>{{ s.atendenteNome ?? 'Não atribuído' }}</td>
                 <td>
                   <button class="btn-link" (click)="verDetalhes(s)">
                     <mat-icon>open_in_new</mat-icon> Ver
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="!atrasadas.length">
+              <tr *ngIf="!carregando && !atrasadasList.length">
                 <td colspan="7" class="empty-row good">Nenhuma solicitação atrasada!</td>
               </tr>
             </tbody>
           </table>
           <app-paginacao
-            [paginaAtual]="paginaSolicits"
-            [totalPaginas]="totalPaginasSolicits"
-            [primeiro]="primeiroSolicits"
-            [ultimo]="ultimoSolicits"
-            (paginaMudou)="onPaginaSolicitsMudou($event)">
+            [paginaAtual]="paginaAtrasadas"
+            [totalPaginas]="totalPaginasAtrasadas"
+            [primeiro]="primeiroAtrasadas"
+            [ultimo]="ultimoAtrasadas"
+            (paginaMudou)="paginaAtrasadas = $event">
           </app-paginacao>
         </div>
       </div>
@@ -276,85 +193,97 @@
                 <th>Título</th>
                 <th>Categoria</th>
                 <th>Data</th>
-                <th>Motivo</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of recusadasExibidas">
+              <tr *ngFor="let s of recusadasList">
                 <td class="col-id">#{{ s.id }}</td>
                 <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoria }}</td>
+                <td>{{ s.categoriaNome }}</td>
                 <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
-                <td class="motivo-col">{{ s.motivoRejeicao ?? '—' }}</td>
+                <td class="acoes-col">
+                  <button class="btn-link" (click)="verDetalhes(s)">
+                    <mat-icon>open_in_new</mat-icon> Ver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!carregando && !recusadasList.length">
+                <td colspan="5" class="empty-row">Nenhuma solicitação recusada.</td>
+              </tr>
+            </tbody>
+          </table>
+          <app-paginacao
+            [paginaAtual]="paginaRecusadas"
+            [totalPaginas]="totalPaginasRecusadas"
+            [primeiro]="primeiroRecusadas"
+            [ultimo]="ultimoRecusadas"
+            (paginaMudou)="carregarRecusadas($event)">
+          </app-paginacao>
+        </div>
+      </div>
+
+      <!-- ══ FINALIZADAS ══ -->
+      <div *ngIf="activeTab === 'finalizadas'" class="tab-content">
+        <div class="page-header">
+          <h2>Solicitações Finalizadas</h2>
+          <p class="page-subtitle">{{ totalFinalizadas }} solicitação(ões) concluída(s)</p>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Prioridade</th>
+                <th>Atendente</th>
+                <th>Finalização</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of finalizadasList">
+                <td class="col-id">#{{ s.id }}</td>
+                <td class="col-titulo">{{ s.titulo }}</td>
+                <td>{{ s.categoriaNome }}</td>
+                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
+                <td>{{ s.atendenteNome ?? '—' }}</td>
+                <td>{{ s.dataFinalizacao ? (s.dataFinalizacao | date:'dd/MM/yyyy') : '—' }}</td>
                 <td>
                   <button class="btn-link" (click)="verDetalhes(s)">
                     <mat-icon>open_in_new</mat-icon> Ver
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="!recusadas.length">
-                <td colspan="6" class="empty-row">Nenhuma solicitação recusada.</td>
+              <tr *ngIf="!carregando && !finalizadasList.length">
+                <td colspan="7" class="empty-row good">Nenhuma solicitação finalizada ainda.</td>
               </tr>
             </tbody>
           </table>
           <app-paginacao
-            [paginaAtual]="paginaSolicits"
-            [totalPaginas]="totalPaginasSolicits"
-            [primeiro]="primeiroSolicits"
-            [ultimo]="ultimoSolicits"
-            (paginaMudou)="onPaginaSolicitsMudou($event)">
+            [paginaAtual]="paginaFinalizadas"
+            [totalPaginas]="totalPaginasFinalizadas"
+            [primeiro]="primeiroFinalizadas"
+            [ultimo]="ultimoFinalizadas"
+            (paginaMudou)="carregarFinalizadas($event)">
           </app-paginacao>
         </div>
       </div>
 
-      <!-- ══ RELATÓRIO / GRÁFICO ══ -->
+      <!-- ══ RELATÓRIO ══ -->
       <div *ngIf="activeTab === 'relatorio'" class="tab-content">
         <div class="page-header">
           <h2>Relatório de Solicitações</h2>
-          <p class="page-subtitle">Distribuição atual por status</p>
+          <p class="page-subtitle">Visão geral dos status</p>
         </div>
-
-        <div class="chart-card">
-          <h3 class="chart-title">Solicitações por Status</h3>
-          <div class="chart-bars">
-            <div class="chart-bar-wrap" *ngFor="let item of chartData">
-              <div class="bar-value">{{ item.value }}</div>
-              <div class="bar-track">
-                <div class="bar-fill"
-                     [style.height.%]="chartMax > 0 ? (item.value / chartMax) * 100 : 0"
-                     [style.background]="item.color">
-                </div>
-              </div>
-              <div class="bar-label">{{ item.name }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="stats-grid" style="margin-top: 1.5rem">
-          <div class="stat-card" *ngFor="let item of chartData">
-            <div class="stat-dot" [style.background]="item.color"></div>
-            <span class="stat-label">{{ item.name }}</span>
-            <span class="stat-value">{{ item.value }}</span>
-          </div>
+        <div class="info-banner">
+          <mat-icon>bar_chart</mat-icon>
+          <p>Navegue pelas abas para visualizar os dados em tempo real.</p>
         </div>
       </div>
 
     </main>
   </div>
 </div>
-
-<!-- Drawer de detalhes -->
-<app-solicitacao-detalhes
-  *ngIf="selectedSolicitacao"
-  [solicitacao]="selectedSolicitacao"
-  [mostrarDadosSolicitante]="true"
-  (fechar)="selectedSolicitacao = null">
-  <button class="btn-success" (click)="onAprovar()" *ngIf="selectedSolicitacao?.status === 'AGUARDANDO_APROVACAO'">
-    <mat-icon>check</mat-icon> Aprovar
-  </button>
-  <button class="btn-danger" (click)="onRejeitar()" *ngIf="selectedSolicitacao?.status === 'AGUARDANDO_APROVACAO'">
-    <mat-icon>close</mat-icon> Rejeitar
-  </button>
-  <button class="btn-outline" (click)="selectedSolicitacao = null">Fechar</button>
-</app-solicitacao-detalhes>

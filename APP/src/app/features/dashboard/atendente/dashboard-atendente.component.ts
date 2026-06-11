@@ -1,15 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgIf, NgFor, NgClass, DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../../core/services/auth.service';
-import { Solicitacao } from '../../../core/models/solicitacao.model';
+import { SolicitacaoService } from '../../../core/services/solicitacao.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { SolicitacaoResponse } from '../../../core/models/solicitacao.model';
 import { NavbarTopComponent } from '../../../shared/components/navbar-top/navbar-top.component';
 import { NavbarLateralComponent, NavItem } from '../../../shared/components/navbar-lateral/navbar-lateral.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { SolicitacaoDetalhesComponent } from '../../../shared/components/solicitacao-detalhes/solicitacao-detalhes.component';
 import { PaginacaoComponent } from '../../../shared/components/paginacao/paginacao.component';
-import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
 
 @Component({
   selector: 'app-dashboard-atendente',
@@ -18,75 +19,118 @@ import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
     NgIf, NgFor, NgClass, DatePipe,
     MatIconModule, MatButtonModule,
     NavbarTopComponent, NavbarLateralComponent,
-    StatusBadgeComponent, SolicitacaoDetalhesComponent, PaginacaoComponent
+    StatusBadgeComponent, PaginacaoComponent
   ],
   templateUrl: './dashboard-atendente.component.html',
   styleUrl: './dashboard-atendente.component.scss'
 })
-export class DashboardAtendenteComponent {
+export class DashboardAtendenteComponent implements OnInit {
   nome = this.auth.getNomeUsuario() ?? 'Atendente';
   activeTab = 'inicio';
 
   navItems: NavItem[] = [
-    { id: 'inicio',  icon: 'home',          label: 'Início' },
-    { id: 'fila',    icon: 'inbox',         label: 'Fila de Atendimento' },
-    { id: 'minhas',  icon: 'assignment',    label: 'Minhas Solicitações' }
+    { id: 'inicio',      icon: 'home',          label: 'Início' },
+    { id: 'fila',        icon: 'inbox',         label: 'Fila de Atendimento' },
+    { id: 'minhas',      icon: 'assignment',    label: 'Minhas Solicitações' },
+    { id: 'finalizadas', icon: 'check_circle',  label: 'Finalizadas por Mim' }
   ];
 
-  // TODO: mock — aguardando endpoint GET /solicitacoes
-  filaAtendimento: Solicitacao[] = MOCK_SOLICITACOES.filter(s =>
-    ['APROVADA', 'AGUARDANDO_ATENDENTE'].includes(s.status)
-  );
+  filaAtendimento: SolicitacaoResponse[] = [];
+  minhasSolicitacoes: SolicitacaoResponse[] = [];
+  finalizadasList: SolicitacaoResponse[] = [];
+  carregando = false;
 
-  // TODO: mock — aguardando endpoint GET /solicitacoes
-  minhasSolicitacoes: Solicitacao[] = MOCK_SOLICITACOES.filter(s =>
-    s.atendente?.nome === 'Mariana Costa' || s.atendente?.nome === 'João Pereira'
-  );
+  paginaFila = 0; totalPaginasFila = 0; primeiroFila = true; ultimoFila = false; totalFila = 0;
+  paginaMinhas = 0; totalPaginasMinhas = 0; primeiroMinhas = true; ultimoMinhas = false; totalMinhasAndamento = 0;
+  paginaFinalizadas = 0; totalPaginasFinalizadas = 0; primeiroFinalizadas = true; ultimoFinalizadas = false; totalFinalizadas = 0;
 
-  selectedSolicitacao: Solicitacao | null = null;
+  constructor(
+    private auth: AuthService,
+    private service: SolicitacaoService,
+    private toast: ToastService,
+    private router: Router
+  ) {}
 
-  readonly pageSizeSolicits = 20;
-  paginaFila = 0;
-  paginaMinhas = 0;
-
-  get totalAguardando(): number { return this.filaAtendimento.filter(s => s.status === 'AGUARDANDO_ATENDENTE').length; }
-  get totalEmAndamento(): number { return this.minhasSolicitacoes.filter(s => s.status === 'EM_ANDAMENTO').length; }
-  get totalFinalizadas(): number { return this.minhasSolicitacoes.filter(s => s.status === 'FINALIZADA').length; }
-
-  get totalPaginasFila(): number  { return Math.ceil(this.filaAtendimento.length / this.pageSizeSolicits) || 1; }
-  get primeiroFila(): boolean     { return this.paginaFila === 0; }
-  get ultimoFila(): boolean       { return this.paginaFila >= this.totalPaginasFila - 1; }
-  get filaExibida(): Solicitacao[] {
-    const start = this.paginaFila * this.pageSizeSolicits;
-    return this.filaAtendimento.slice(start, start + this.pageSizeSolicits);
+  ngOnInit(): void {
+    this.carregarFila();
+    this.carregarMinhas();
+    this.carregarTotalFinalizadas();
   }
 
-  get totalPaginasMinhas(): number { return Math.ceil(this.minhasSolicitacoes.length / this.pageSizeSolicits) || 1; }
-  get primeiroMinhas(): boolean    { return this.paginaMinhas === 0; }
-  get ultimoMinhas(): boolean      { return this.paginaMinhas >= this.totalPaginasMinhas - 1; }
-  get minhasExibidas(): Solicitacao[] {
-    const start = this.paginaMinhas * this.pageSizeSolicits;
-    return this.minhasSolicitacoes.slice(start, start + this.pageSizeSolicits);
+  private carregarTotalFinalizadas(): void {
+    this.service.finalizadasPorMim(0, 1).subscribe({
+      next: r => this.totalFinalizadas = r.totalElements,
+      error: () => {}
+    });
   }
 
-  constructor(private auth: AuthService) {}
-
-  setTab(id: string): void { this.activeTab = id; }
-  verDetalhes(s: Solicitacao): void { this.selectedSolicitacao = s; }
-
-  onPaginaFilaMudou(pagina: number): void {
-    this.paginaFila = pagina;
-    document.getElementById('fila-section')?.scrollIntoView({ behavior: 'smooth' });
+  setTab(id: string): void {
+    this.activeTab = id;
+    if (id === 'fila')        this.carregarFila(0);
+    if (id === 'minhas')      this.carregarMinhas(0);
+    if (id === 'finalizadas') this.carregarFinalizadas(0);
   }
 
-  onPaginaMinhasMudou(pagina: number): void {
-    this.paginaMinhas = pagina;
-    document.getElementById('minhas-atendente-section')?.scrollIntoView({ behavior: 'smooth' });
+  carregarFila(pagina = 0): void {
+    this.carregando = true;
+    this.service.fila(pagina).subscribe({
+      next: res => {
+        this.filaAtendimento = res.content;
+        this.paginaFila = res.number;
+        this.totalPaginasFila = res.totalPages;
+        this.primeiroFila = res.first;
+        this.ultimoFila = res.last;
+        this.totalFila = res.totalElements;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar fila'); this.carregando = false; }
+    });
   }
 
-  onPuxarAtendimento(): void {
-    alert('Em breve: integração com o backend');
+  carregarMinhas(pagina = 0): void {
+    this.carregando = true;
+    this.service.emAndamento(pagina).subscribe({
+      next: res => {
+        this.minhasSolicitacoes = res.content;
+        this.paginaMinhas = res.number;
+        this.totalPaginasMinhas = res.totalPages;
+        this.primeiroMinhas = res.first;
+        this.ultimoMinhas = res.last;
+        this.totalMinhasAndamento = res.content.filter(s => s.status === 'EM_ANDAMENTO').length;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações'); this.carregando = false; }
+    });
   }
+
+  carregarFinalizadas(pagina = 0): void {
+    this.carregando = true;
+    this.service.finalizadasPorMim(pagina).subscribe({
+      next: res => {
+        this.finalizadasList = res.content;
+        this.paginaFinalizadas = res.number;
+        this.totalPaginasFinalizadas = res.totalPages;
+        this.primeiroFinalizadas = res.first;
+        this.ultimoFinalizadas = res.last;
+        this.totalFinalizadas = res.totalElements;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações finalizadas'); this.carregando = false; }
+    });
+  }
+
+  verDetalhes(s: SolicitacaoResponse): void {
+    this.router.navigate(['/dashboard/atendente/solicitacoes', s.id]);
+  }
+
+  estaAtrasada(s: SolicitacaoResponse): boolean {
+    if (!s.dataPrazo || s.status === 'FINALIZADA') return false;
+    return new Date(s.dataPrazo) < new Date();
+  }
+
+  get totalAguardando(): number { return this.totalFila; }
+  get totalEmAndamento(): number { return this.totalMinhasAndamento; }
+  get totalConcluidas(): number { return this.totalFinalizadas; }
 
   logout(): void { this.auth.logout(); }
 }

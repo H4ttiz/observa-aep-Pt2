@@ -8,21 +8,20 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../../core/services/auth.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
+import { SolicitacaoService } from '../../../core/services/solicitacao.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Solicitacao } from '../../../core/models/solicitacao.model';
+import { SolicitacaoResponse } from '../../../core/models/solicitacao.model';
 import { Usuario, UsuarioRequest } from '../../../core/models/usuario.model';
 import { Categoria, CategoriaRequest } from '../../../core/models/categoria.model';
 import { Log } from '../../../core/models/log.model';
 import { NavbarTopComponent } from '../../../shared/components/navbar-top/navbar-top.component';
 import { NavbarLateralComponent, NavItem } from '../../../shared/components/navbar-lateral/navbar-lateral.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { SolicitacaoDetalhesComponent } from '../../../shared/components/solicitacao-detalhes/solicitacao-detalhes.component';
 import { PasswordInputComponent } from '../../../shared/components/password-input/password-input.component';
 import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
 import { PaginacaoComponent } from '../../../shared/components/paginacao/paginacao.component';
 import { EnderecoUsuarioFormComponent } from '../../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
 import { LogService } from '../../../core/services/log.service';
-import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
 
 @Component({
   selector: 'app-dashboard-admin',
@@ -31,7 +30,7 @@ import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
     NgIf, NgFor, NgClass, DatePipe, FormsModule,
     MatIconModule, MatButtonModule, MatTooltipModule,
     NavbarTopComponent, NavbarLateralComponent,
-    StatusBadgeComponent, SolicitacaoDetalhesComponent,
+    StatusBadgeComponent,
     PasswordInputComponent, FieldErrorComponent, PaginacaoComponent,
     EnderecoUsuarioFormComponent
   ],
@@ -54,7 +53,6 @@ export class DashboardAdminComponent implements OnInit {
     { id: 'categorias',   icon: 'sell',              label: 'Categorias' }
   ];
 
-  // ── Logs ──────────────────────────────────────────────────────────────────
   logs: Log[] = [];
   carregandoLogs = false;
   filtroLog = '';
@@ -64,7 +62,6 @@ export class DashboardAdminComponent implements OnInit {
   ultimoLogs = false;
   totalElementosLogs = 0;
 
-  // ── Usuários ──────────────────────────────────────────────────────────────
   usuarios: Usuario[] = [];
   carregandoUsuarios = false;
   paginaAtualUsuarios = 0;
@@ -73,12 +70,14 @@ export class DashboardAdminComponent implements OnInit {
   ultimoUsuarios = false;
   totalElementosUsuarios = 0;
 
-  // ── Solicitações (mock — aguardando endpoint GET /solicitacoes) ────────────
-  // TODO: mock — aguardando endpoint GET /solicitacoes
-  solicitacoes: Solicitacao[] = MOCK_SOLICITACOES;
-  selectedSolicitacao: Solicitacao | null = null;
+  solicitacoes: SolicitacaoResponse[] = [];
+  carregandoSolicitacoes = false;
+  paginaAtualSolicits = 0;
+  totalPaginasSolicits = 0;
+  primeiroSolicits = true;
+  ultimoSolicits = false;
+  totalElementosSolicits = 0;
 
-  // ── Categorias ────────────────────────────────────────────────────────────
   categorias: Categoria[] = [];
   carregandoCategorias = false;
   paginaAtualCategorias = 0;
@@ -89,12 +88,10 @@ export class DashboardAdminComponent implements OnInit {
   totalCategoriasAtivas = 0;
   filtroCategorias = '';
 
-  // ── Modais ────────────────────────────────────────────────────────────────
   showModalUsuario = false;
   showModalCategoria = false;
   showModalConfirmDelete = false;
   showModalConfirmDesativar = false;
-  showModalRemoverAnonimato = false;
   showModalConfirmDesativarCategoria = false;
   showModalConfirmExcluirCategoria = false;
 
@@ -118,7 +115,7 @@ export class DashboardAdminComponent implements OnInit {
   get stats() {
     return {
       usuarios:     this.totalElementosUsuarios,
-      solicitacoes: this.solicitacoes.length,
+      solicitacoes: this.totalElementosSolicits,
       categorias:   this.totalCategoriasAtivas
     };
   }
@@ -127,6 +124,7 @@ export class DashboardAdminComponent implements OnInit {
     private auth: AuthService,
     private usuarioService: UsuarioService,
     private categoriaService: CategoriaService,
+    private solicitacaoService: SolicitacaoService,
     private logService: LogService,
     private toast: ToastService,
     private router: Router,
@@ -138,18 +136,18 @@ export class DashboardAdminComponent implements OnInit {
     if (tab) this.activeTab = tab;
     this.carregarUsuarios();
     this.carregarEstatisticasCategorias();
-    if (this.activeTab === 'logs')       this.carregarLogs();
-    if (this.activeTab === 'categorias') this.carregarCategorias();
+    if (this.activeTab === 'logs')         this.carregarLogs();
+    if (this.activeTab === 'categorias')   this.carregarCategorias();
+    if (this.activeTab === 'solicitacoes') this.carregarSolicitacoes();
   }
 
   setTab(id: string): void {
     this.activeTab = id;
-    if (id === 'usuarios')   this.carregarUsuarios(0);
-    if (id === 'logs')       this.carregarLogs(0);
-    if (id === 'categorias') this.carregarCategorias(0);
+    if (id === 'usuarios')     this.carregarUsuarios(0);
+    if (id === 'logs')         this.carregarLogs(0);
+    if (id === 'categorias')   this.carregarCategorias(0);
+    if (id === 'solicitacoes') this.carregarSolicitacoes(0);
   }
-
-  // ── Logs ──────────────────────────────────────────────────────────────────
 
   carregarLogs(pagina = 0): void {
     this.carregandoLogs = true;
@@ -177,9 +175,9 @@ export class DashboardAdminComponent implements OnInit {
     document.getElementById('logs-tab')?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  verDetalhes(s: Solicitacao): void { this.selectedSolicitacao = s; }
-
-  // ── Usuários ──────────────────────────────────────────────────────────────
+  verDetalhes(s: SolicitacaoResponse): void {
+    this.router.navigate(['/dashboard/admin/solicitacoes', s.id]);
+  }
 
   carregarUsuarios(pagina = 0): void {
     this.carregandoUsuarios = true;
@@ -277,8 +275,6 @@ export class DashboardAdminComponent implements OnInit {
       error: err => this.toast.error(err.error?.erro ?? 'Erro ao excluir usuário')
     });
   }
-
-  // ── Categorias ────────────────────────────────────────────────────────────
 
   carregarEstatisticasCategorias(): void {
     this.categoriaService.listarAtivas(0, 1).subscribe({
@@ -403,13 +399,25 @@ export class DashboardAdminComponent implements OnInit {
     });
   }
 
-  // ── Solicitações ──────────────────────────────────────────────────────────
+  carregarSolicitacoes(pagina = 0): void {
+    this.carregandoSolicitacoes = true;
+    this.solicitacaoService.listarTodas(pagina).subscribe({
+      next: res => {
+        this.solicitacoes = res.content;
+        this.paginaAtualSolicits = res.number;
+        this.totalPaginasSolicits = res.totalPages;
+        this.primeiroSolicits = res.first;
+        this.ultimoSolicits = res.last;
+        this.totalElementosSolicits = res.totalElements;
+        this.carregandoSolicitacoes = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações'); this.carregandoSolicitacoes = false; }
+    });
+  }
 
-  onRemoverAnonimato(): void { this.showModalRemoverAnonimato = true; }
-
-  confirmarRemoverAnonimato(): void {
-    alert('Em breve: integração com o backend');
-    this.showModalRemoverAnonimato = false;
+  onPaginaSolicitsMudou(pagina: number): void {
+    this.carregarSolicitacoes(pagina);
+    document.getElementById('solicitacoes-tab')?.scrollIntoView({ behavior: 'smooth' });
   }
 
   logout(): void { this.auth.logout(); }

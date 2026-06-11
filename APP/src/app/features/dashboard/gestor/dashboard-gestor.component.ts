@@ -1,139 +1,189 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgIf, NgFor, NgClass, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../../core/services/auth.service';
-import { Solicitacao } from '../../../core/models/solicitacao.model';
+import { SolicitacaoService } from '../../../core/services/solicitacao.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { SolicitacaoResponse } from '../../../core/models/solicitacao.model';
 import { NavbarTopComponent } from '../../../shared/components/navbar-top/navbar-top.component';
 import { NavbarLateralComponent, NavItem } from '../../../shared/components/navbar-lateral/navbar-lateral.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { SolicitacaoDetalhesComponent } from '../../../shared/components/solicitacao-detalhes/solicitacao-detalhes.component';
 import { PaginacaoComponent } from '../../../shared/components/paginacao/paginacao.component';
-import { MOCK_SOLICITACOES } from '../../../shared/mock-data/mock-data';
 
 @Component({
   selector: 'app-dashboard-gestor',
   standalone: true,
   imports: [
-    NgIf, NgFor, NgClass, DatePipe, FormsModule,
+    NgIf, NgFor, NgClass, DatePipe,
     MatIconModule, MatButtonModule,
     NavbarTopComponent, NavbarLateralComponent,
-    StatusBadgeComponent, SolicitacaoDetalhesComponent, PaginacaoComponent
+    StatusBadgeComponent, PaginacaoComponent
   ],
   templateUrl: './dashboard-gestor.component.html',
   styleUrl: './dashboard-gestor.component.scss'
 })
-export class DashboardGestorComponent {
+export class DashboardGestorComponent implements OnInit {
   nome = this.auth.getNomeUsuario() ?? 'Gestor';
   activeTab = 'inicio';
-  filtroStatus = '';
 
   navItems: NavItem[] = [
-    { id: 'inicio',        icon: 'home',              label: 'Início' },
-    { id: 'aprovacao',     icon: 'pending_actions',   label: 'Ag. Aprovação' },
-    { id: 'andamento',     icon: 'sync',              label: 'Em Andamento' },
-    { id: 'movimentacao',  icon: 'swap_horiz',        label: 'Movimentação Geral' },
-    { id: 'atrasadas',     icon: 'alarm_off',         label: 'Atrasadas' },
-    { id: 'recusadas',     icon: 'cancel',            label: 'Recusadas' },
-    { id: 'relatorio',     icon: 'bar_chart',         label: 'Relatório' }
+    { id: 'inicio',       icon: 'home',            label: 'Início' },
+    { id: 'aprovacao',    icon: 'pending_actions',  label: 'Ag. Aprovação' },
+    { id: 'andamento',    icon: 'sync',             label: 'Em Andamento' },
+    { id: 'atrasadas',    icon: 'alarm_off',        label: 'Atrasadas' },
+    { id: 'recusadas',    icon: 'cancel',           label: 'Recusadas' },
+    { id: 'finalizadas',  icon: 'check_circle',     label: 'Finalizadas' },
+    { id: 'relatorio',    icon: 'bar_chart',        label: 'Relatório' }
   ];
 
-  // TODO: mock — aguardando endpoint GET /solicitacoes
-  aguardandoAprovacao: Solicitacao[] = MOCK_SOLICITACOES.filter(s => s.status === 'AGUARDANDO_APROVACAO');
-  emAndamento:         Solicitacao[] = MOCK_SOLICITACOES.filter(s => s.status === 'EM_ANDAMENTO');
-  todasSolicitacoes:   Solicitacao[] = MOCK_SOLICITACOES;
-  atrasadas:           Solicitacao[] = MOCK_SOLICITACOES.filter(s => s.atrasada);
-  recusadas:           Solicitacao[] = MOCK_SOLICITACOES.filter(s => s.status === 'REJEITADA');
+  // ── Listas ────────────────────────────────────────────────────────────────
+  aguardandoAprovacaoList: SolicitacaoResponse[] = [];
+  emAndamentoList: SolicitacaoResponse[] = [];
+  atrasadasList: SolicitacaoResponse[] = [];
+  recusadasList: SolicitacaoResponse[] = [];
 
-  selectedSolicitacao: Solicitacao | null = null;
+  carregando = false;
 
-  // Paginação — estado único por tab (reseta ao trocar de aba ou filtro)
-  readonly pageSizeSolicits = 20;
-  paginaSolicits = 0;
+  paginaAprovacao = 0; totalPaginasAprovacao = 0; primeiroAprovacao = true; ultimoAprovacao = false; totalAprovacao = 0;
+  paginaAndamento = 0; totalPaginasAndamento = 0; primeiroAndamento = true; ultimoAndamento = false;
+  paginaAtrasadas = 0; totalPaginasAtrasadas = 0; primeiroAtrasadas = true; ultimoAtrasadas = false;
+  paginaRecusadas = 0; totalPaginasRecusadas = 0; primeiroRecusadas = true; ultimoRecusadas = false;
+  finalizadasList: SolicitacaoResponse[] = [];
+  paginaFinalizadas = 0; totalPaginasFinalizadas = 0; primeiroFinalizadas = true; ultimoFinalizadas = false; totalFinalizadas = 0;
 
-  private get listaAtiva(): Solicitacao[] {
-    switch (this.activeTab) {
-      case 'aprovacao':    return this.aguardandoAprovacao;
-      case 'andamento':    return this.emAndamento;
-      case 'movimentacao': return this.solicitacoesFiltradas;
-      case 'atrasadas':    return this.atrasadas;
-      case 'recusadas':    return this.recusadas;
-      default:             return [];
-    }
-  }
+  constructor(
+    private auth: AuthService,
+    private service: SolicitacaoService,
+    private toast: ToastService,
+    private router: Router
+  ) {}
 
-  private paginar(lista: Solicitacao[]): Solicitacao[] {
-    const start = this.paginaSolicits * this.pageSizeSolicits;
-    return lista.slice(start, start + this.pageSizeSolicits);
-  }
-
-  get totalPaginasSolicits(): number { return Math.ceil(this.listaAtiva.length / this.pageSizeSolicits) || 1; }
-  get primeiroSolicits(): boolean    { return this.paginaSolicits === 0; }
-  get ultimoSolicits(): boolean      { return this.paginaSolicits >= this.totalPaginasSolicits - 1; }
-
-  get aguardandoAprovacaoExibidos(): Solicitacao[] { return this.paginar(this.aguardandoAprovacao); }
-  get emAndamentoExibidos(): Solicitacao[]         { return this.paginar(this.emAndamento); }
-  get solicitacoesFiltradasExibidas(): Solicitacao[] { return this.paginar(this.solicitacoesFiltradas); }
-  get atrasadasExibidas(): Solicitacao[]           { return this.paginar(this.atrasadas); }
-  get recusadasExibidas(): Solicitacao[]           { return this.paginar(this.recusadas); }
-
-  get statusOptions(): string[] {
-    return ['', 'AGUARDANDO_APROVACAO', 'APROVADA', 'AGUARDANDO_ATENDENTE', 'EM_ANDAMENTO', 'FINALIZADA', 'REJEITADA'];
-  }
-
-  get solicitacoesFiltradas(): Solicitacao[] {
-    if (!this.filtroStatus) return this.todasSolicitacoes;
-    return this.todasSolicitacoes.filter(s => s.status === this.filtroStatus);
-  }
-
-  get chartData(): { name: string; value: number; color: string }[] {
-    const finalizadas  = this.todasSolicitacoes.filter(s => s.status === 'FINALIZADA').length;
-    const emAndamento  = this.todasSolicitacoes.filter(s => s.status === 'EM_ANDAMENTO').length;
-    const recusadas    = this.todasSolicitacoes.filter(s => s.status === 'REJEITADA').length;
-    const atrasadas    = this.todasSolicitacoes.filter(s => s.atrasada).length;
-    const aguardando   = this.todasSolicitacoes.filter(s => s.status === 'AGUARDANDO_APROVACAO').length;
-    return [
-      { name: 'Finalizadas',  value: finalizadas, color: '#059669' },
-      { name: 'Em Andamento', value: emAndamento, color: '#0D9488' },
-      { name: 'Recusadas',    value: recusadas,   color: '#DC2626' },
-      { name: 'Atrasadas',    value: atrasadas,   color: '#EA580C' },
-      { name: 'Ag. Aprovação',value: aguardando,  color: '#D97706' }
-    ];
-  }
-
-  get chartMax(): number {
-    return Math.max(...this.chartData.map(d => d.value), 1);
+  ngOnInit(): void {
+    this.carregarAprovacao();
+    this.carregarEstatisticasInicio();
   }
 
   get totalStats() {
-    return {
-      aguardandoAprovacao: this.aguardandoAprovacao.length,
-      emAndamento:         this.emAndamento.length,
-      finalizadas:         this.todasSolicitacoes.filter(s => s.status === 'FINALIZADA').length,
-      rejeitadas:          this.recusadas.length,
-      atrasadas:           this.atrasadas.length
-    };
+    return { aguardandoAprovacao: this.totalAprovacao };
   }
-
-  constructor(private auth: AuthService) {}
 
   setTab(id: string): void {
     this.activeTab = id;
-    this.paginaSolicits = 0;
+    if (id === 'aprovacao') this.carregarAprovacao(0);
+    if (id === 'andamento')   this.carregarAndamento(0);
+    if (id === 'atrasadas')   this.carregarAtrasadas();
+    if (id === 'recusadas')   this.carregarRecusadas(0);
+    if (id === 'finalizadas') this.carregarFinalizadas(0);
   }
 
-  verDetalhes(s: Solicitacao): void { this.selectedSolicitacao = s; }
+  // ── Carregamentos ─────────────────────────────────────────────────────────
 
-  onFiltroStatusChange(): void { this.paginaSolicits = 0; }
-
-  onPaginaSolicitsMudou(pagina: number): void {
-    this.paginaSolicits = pagina;
-    document.querySelector('.content-area')?.scrollTo({ top: 0, behavior: 'smooth' });
+  private carregarEstatisticasInicio(): void {
+    this.service.aguardandoAprovacao(0, 1).subscribe({
+      next: r => this.totalAprovacao = r.totalElements,
+      error: () => {}
+    });
   }
 
-  onAprovar():  void { alert('Em breve: integração com o backend'); }
-  onRejeitar(): void { alert('Em breve: integração com o backend'); }
+  carregarAprovacao(pagina = 0): void {
+    this.carregando = true;
+    this.service.aguardandoAprovacao(pagina).subscribe({
+      next: res => {
+        this.aguardandoAprovacaoList = res.content;
+        this.paginaAprovacao = res.number;
+        this.totalPaginasAprovacao = res.totalPages;
+        this.primeiroAprovacao = res.first;
+        this.ultimoAprovacao = res.last;
+        this.totalAprovacao = res.totalElements;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações'); this.carregando = false; }
+    });
+  }
+
+  carregarAndamento(pagina = 0): void {
+    this.carregando = true;
+    this.service.emAndamento(pagina).subscribe({
+      next: res => {
+        this.emAndamentoList = res.content;
+        this.paginaAndamento = res.number;
+        this.totalPaginasAndamento = res.totalPages;
+        this.primeiroAndamento = res.first;
+        this.ultimoAndamento = res.last;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações'); this.carregando = false; }
+    });
+  }
+
+  carregarAtrasadas(): void {
+    this.carregando = true;
+    this.service.emAndamento(0, 100).subscribe({
+      next: res => {
+        const hoje = new Date();
+        this.atrasadasList = res.content.filter(
+          s => s.dataPrazo && new Date(s.dataPrazo) < hoje
+        );
+        this.totalPaginasAtrasadas = Math.ceil(this.atrasadasList.length / 20) || 1;
+        this.primeiroAtrasadas = true;
+        this.ultimoAtrasadas = this.totalPaginasAtrasadas <= 1;
+        this.paginaAtrasadas = 0;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações'); this.carregando = false; }
+    });
+  }
+
+  carregarRecusadas(pagina = 0): void {
+    this.carregando = true;
+    this.service.rejeitadas(pagina).subscribe({
+      next: res => {
+        this.recusadasList = res.content;
+        this.paginaRecusadas = res.number;
+        this.totalPaginasRecusadas = res.totalPages;
+        this.primeiroRecusadas = res.first;
+        this.ultimoRecusadas = res.last;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações'); this.carregando = false; }
+    });
+  }
+
+  carregarFinalizadas(pagina = 0): void {
+    this.carregando = true;
+    this.service.finalizadas(pagina).subscribe({
+      next: res => {
+        this.finalizadasList = res.content;
+        this.paginaFinalizadas = res.number;
+        this.totalPaginasFinalizadas = res.totalPages;
+        this.primeiroFinalizadas = res.first;
+        this.ultimoFinalizadas = res.last;
+        this.totalFinalizadas = res.totalElements;
+        this.carregando = false;
+      },
+      error: () => { this.toast.error('Erro ao carregar solicitações finalizadas'); this.carregando = false; }
+    });
+  }
+
+  // ── Ações ────────────────────────────────────────────────────────────────
+
+  verDetalhes(s: SolicitacaoResponse): void {
+    this.router.navigate(['/dashboard/gestor/solicitacoes', s.id]);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  estaAtrasada(s: SolicitacaoResponse): boolean {
+    if (!s.dataPrazo || s.status === 'FINALIZADA' || s.status === 'REJEITADA') return false;
+    return new Date(s.dataPrazo) < new Date();
+  }
+
+  get atrasadasExibidas(): SolicitacaoResponse[] {
+    const start = this.paginaAtrasadas * 20;
+    return this.atrasadasList.slice(start, start + 20);
+  }
 
   logout(): void { this.auth.logout(); }
 }
