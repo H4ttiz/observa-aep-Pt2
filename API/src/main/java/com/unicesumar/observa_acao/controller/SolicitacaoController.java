@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/solicitacoes")
 @RequiredArgsConstructor
@@ -22,9 +24,11 @@ public class SolicitacaoController {
 
     private final SolicitacaoService service;
 
-    @PostMapping
-    public ResponseEntity<SolicitacaoResponseDTO> criar(@Valid @RequestBody SolicitacaoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SolicitacaoResponseDTO> criar(
+            @RequestPart("solicitacao") @Valid SolicitacaoRequestDTO dto,
+            @RequestPart(value = "imagens", required = false) List<MultipartFile> imagens) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto, imagens));
     }
 
     @PutMapping("/{id}")
@@ -148,10 +152,10 @@ public class SolicitacaoController {
     }
 
     @PostMapping(value = "/{id}/imagens", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ImagemSolicitacaoResponseDTO> adicionarImagem(
+    public ResponseEntity<List<ImagemSolicitacaoResponseDTO>> adicionarImagens(
             @PathVariable Long id,
-            @RequestParam("arquivo") MultipartFile arquivo) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.adicionarImagem(id, arquivo));
+            @RequestParam("arquivos") List<MultipartFile> arquivos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.adicionarImagens(id, arquivos));
     }
 
     @DeleteMapping("/{id}/imagens/{imgId}")

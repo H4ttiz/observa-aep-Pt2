@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -56,11 +57,20 @@ public class SolicitacaoService {
     private static final int LIMITE_IMAGENS = 5;
 
     @Transactional
-    public SolicitacaoResponseDTO criar(SolicitacaoRequestDTO dto) {
+    public SolicitacaoResponseDTO criar(SolicitacaoRequestDTO dto, List<MultipartFile> imagens) {
         Usuario solicitante = getUsuarioLogado();
 
         Categoria categoria = categoriaRepository.findById(dto.categoriaId())
                 .orElseThrow(() -> new NotFoundException("Categoria não encontrada"));
+
+        List<MultipartFile> imagensValidas = filtrarNaoVazios(imagens);
+
+        if (imagensValidas.size() > LIMITE_IMAGENS) {
+            throw new RegraDeNegocioException("Limite de 5 imagens por solicitação atingido.");
+        }
+        for (MultipartFile arquivo : imagensValidas) {
+            validarArquivo(arquivo);
+        }
 
         EnderecoSolicitacaoRequestDTO endDTO = resolverEndereco(dto, solicitante);
 
@@ -78,12 +88,16 @@ public class SolicitacaoService {
         EnderecoSolicitacao endereco = criarEndereco(endDTO, salva);
         salva.setEnderecoSolicitacao(endereco);
 
+        for (MultipartFile arquivo : imagensValidas) {
+            salvarArquivoImagem(arquivo, salva);
+        }
+
         registrarHistorico(salva, null, StatusSolicitacao.AGUARDANDO_APROVACAO, null, solicitante);
 
         logService.registrar(TipoLog.CRIACAO,
                 "Solicitação criada: ID " + salva.getId() + " — " + salva.getTitulo(), solicitante);
 
-        return toResponseDTO(salva, solicitante.getTipoUsuario());
+        return toResponseDTO(salva, solicitante.getTipoUsuario(), solicitante.getId());
     }
 
     @Transactional
@@ -113,20 +127,20 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Solicitação editada pelo solicitante: ID " + sol.getId(), logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional(readOnly = true)
     public Page<SolicitacaoResponseDTO> minhas(Pageable pageable) {
         Usuario logado = getUsuarioLogado();
         return solicitacaoRepository.findBySolicitanteId(logado.getId(), pageable)
-                .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
     }
 
     @Transactional(readOnly = true)
     public SolicitacaoResponseDTO buscarPorId(Long id) {
         Usuario logado = getUsuarioLogado();
-        return toResponseDTO(encontrarPorId(id), logado.getTipoUsuario());
+        return toResponseDTO(encontrarPorId(id), logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional
@@ -151,7 +165,7 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Solicitação ID " + sol.getId() + " aprovada pelo gestor", logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional
@@ -170,7 +184,7 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Solicitação ID " + sol.getId() + " rejeitada pelo gestor", logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional
@@ -190,28 +204,28 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Solicitação ID " + sol.getId() + " reativada para AGUARDANDO_APROVACAO pelo gestor", logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional(readOnly = true)
     public Page<SolicitacaoResponseDTO> aguardandoAprovacao(Pageable pageable) {
         Usuario logado = getUsuarioLogado();
         return solicitacaoRepository.findByStatus(StatusSolicitacao.AGUARDANDO_APROVACAO, pageable)
-                .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
     }
 
     @Transactional(readOnly = true)
     public Page<SolicitacaoResponseDTO> rejeitadas(Pageable pageable) {
         Usuario logado = getUsuarioLogado();
         return solicitacaoRepository.findByStatus(StatusSolicitacao.REJEITADA, pageable)
-                .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
     }
 
     @Transactional(readOnly = true)
     public Page<SolicitacaoResponseDTO> finalizadas(Pageable pageable) {
         Usuario logado = getUsuarioLogado();
         return solicitacaoRepository.findByStatus(StatusSolicitacao.FINALIZADA, pageable)
-                .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
     }
 
     @Transactional(readOnly = true)
@@ -220,10 +234,10 @@ public class SolicitacaoService {
         if (logado.getTipoUsuario() == TipoUsuario.ATENDENTE) {
             return solicitacaoRepository
                     .findByAtendenteIdAndStatus(logado.getId(), StatusSolicitacao.EM_ANDAMENTO, pageable)
-                    .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                    .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
         }
         return solicitacaoRepository.findByStatus(StatusSolicitacao.EM_ANDAMENTO, pageable)
-                .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
     }
 
     @Transactional
@@ -243,7 +257,7 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Atendente ID " + logado.getId() + " pegou a solicitação ID " + sol.getId(), logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional
@@ -264,7 +278,7 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Solicitação ID " + sol.getId() + " finalizada pelo atendente ID " + logado.getId(), logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional
@@ -285,7 +299,7 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Atendente ID " + logado.getId() + " desvinculou da solicitação ID " + sol.getId(), logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional
@@ -306,14 +320,14 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "Solicitação ID " + sol.getId() + " reaberta pelo atendente ID " + logado.getId(), logado);
 
-        return toResponseDTO(sol, logado.getTipoUsuario());
+        return toResponseDTO(sol, logado.getTipoUsuario(), logado.getId());
     }
 
     @Transactional(readOnly = true)
     public Page<SolicitacaoResponseDTO> fila(Pageable pageable) {
         Usuario logado = getUsuarioLogado();
         return solicitacaoRepository.findByStatus(StatusSolicitacao.AGUARDANDO_ATENDENTE, pageable)
-                .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
     }
 
     @Transactional(readOnly = true)
@@ -321,13 +335,13 @@ public class SolicitacaoService {
         Usuario logado = getUsuarioLogado();
         return solicitacaoRepository
                 .findByAtendenteIdAndStatus(logado.getId(), StatusSolicitacao.FINALIZADA, pageable)
-                .map(s -> toResponseDTO(s, logado.getTipoUsuario()));
+                .map(s -> toResponseDTO(s, logado.getTipoUsuario(), logado.getId()));
     }
 
     @Transactional(readOnly = true)
     public Page<SolicitacaoResponseDTO> listarTodas(Pageable pageable) {
         return solicitacaoRepository.findAll(pageable)
-                .map(s -> toResponseDTO(s, TipoUsuario.ADMINISTRADOR));
+                .map(s -> toResponseDTO(s, TipoUsuario.ADMINISTRADOR, null));
     }
 
     @Transactional
@@ -349,7 +363,7 @@ public class SolicitacaoService {
                 "ADM " + logado.getEmail() + " revelou anonimato da solicitação ID " + sol.getId()
                         + ". Observação: " + dto.observacao(), logado);
 
-        return toResponseDTO(sol, TipoUsuario.ADMINISTRADOR);
+        return toResponseDTO(sol, TipoUsuario.ADMINISTRADOR, logado.getId());
     }
 
     @Transactional
@@ -368,7 +382,7 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "ADM vinculou atendente ID " + atendente.getId() + " à solicitação ID " + sol.getId(), logado);
 
-        return toResponseDTO(sol, TipoUsuario.ADMINISTRADOR);
+        return toResponseDTO(sol, TipoUsuario.ADMINISTRADOR, logado.getId());
     }
 
     @Transactional
@@ -398,11 +412,11 @@ public class SolicitacaoService {
         logService.registrar(TipoLog.ALTERACAO,
                 "ADM atualizou a solicitação ID " + sol.getId(), logado);
 
-        return toResponseDTO(sol, TipoUsuario.ADMINISTRADOR);
+        return toResponseDTO(sol, TipoUsuario.ADMINISTRADOR, logado.getId());
     }
 
     @Transactional
-    public ImagemSolicitacaoResponseDTO adicionarImagem(Long solicitacaoId, MultipartFile arquivo) {
+    public List<ImagemSolicitacaoResponseDTO> adicionarImagens(Long solicitacaoId, List<MultipartFile> arquivos) {
         Usuario logado = getUsuarioLogado();
         Solicitacao sol = encontrarPorId(solicitacaoId);
 
@@ -417,40 +431,31 @@ public class SolicitacaoService {
             }
         }
 
-        if (imagemRepository.countBySolicitacaoId(solicitacaoId) >= LIMITE_IMAGENS) {
+        List<MultipartFile> validos = filtrarNaoVazios(arquivos);
+
+        long existentes = imagemRepository.countBySolicitacaoId(solicitacaoId);
+        if (existentes + validos.size() > LIMITE_IMAGENS) {
             throw new RegraDeNegocioException("Limite de 5 imagens por solicitação atingido.");
         }
 
-        String contentType = arquivo.getContentType();
-        if (contentType == null || !TIPOS_IMAGEM_ACEITOS.contains(contentType)) {
-            throw new RegraDeNegocioException("Tipo de arquivo não permitido. Use JPEG, PNG ou WebP.");
+        for (MultipartFile arquivo : validos) {
+            validarArquivo(arquivo);
         }
 
-        String ext = obterExtensao(arquivo.getOriginalFilename(), contentType);
-        String filename = solicitacaoId + "_" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ext;
-
-        try {
-            Path dir = Paths.get("uploads", "solicitacoes", solicitacaoId.toString());
-            Files.createDirectories(dir);
-            Files.copy(arquivo.getInputStream(), dir.resolve(filename));
-        } catch (IOException e) {
-            throw new RegraDeNegocioException("Erro ao salvar imagem");
+        List<ImagemSolicitacaoResponseDTO> resultado = new ArrayList<>();
+        for (MultipartFile arquivo : validos) {
+            ImagemSolicitacao imagem = salvarArquivoImagem(arquivo, sol);
+            resultado.add(new ImagemSolicitacaoResponseDTO(
+                    imagem.getId(),
+                    fotoUrlHelper.buildFotoUrl(imagem.getUrl()),
+                    imagem.getDataUpload()
+            ));
         }
 
-        ImagemSolicitacao imagem = new ImagemSolicitacao();
-        imagem.setSolicitacao(sol);
-        imagem.setUrl("uploads/solicitacoes/" + solicitacaoId + "/" + filename);
-        imagem.setDataUpload(LocalDateTime.now());
-        imagemRepository.save(imagem);
+        logService.registrar(TipoLog.ALTERACAO,
+                "Imagens adicionadas à solicitação ID " + solicitacaoId, logado);
 
-        logService.registrar(TipoLog.CRIACAO,
-                "Imagem adicionada à solicitação ID " + solicitacaoId, logado);
-
-        return new ImagemSolicitacaoResponseDTO(
-                imagem.getId(),
-                fotoUrlHelper.buildFotoUrl(imagem.getUrl()),
-                imagem.getDataUpload()
-        );
+        return resultado;
     }
 
     @Transactional
@@ -549,14 +554,20 @@ public class SolicitacaoService {
         }
     }
 
-    private SolicitacaoResponseDTO toResponseDTO(Solicitacao sol, TipoUsuario perfilLogado) {
+    private SolicitacaoResponseDTO toResponseDTO(Solicitacao sol, TipoUsuario perfilLogado, Long logadoId) {
         Long solicitanteId = null;
         String solicitanteNome = null;
 
         if (sol.getSolicitante() != null) {
-            if (!sol.getAnonima() || perfilLogado == TipoUsuario.ADMINISTRADOR) {
+            boolean isAdm = perfilLogado == TipoUsuario.ADMINISTRADOR;
+            boolean isProprioSolicitante = logadoId != null && sol.getSolicitante().getId().equals(logadoId);
+
+            if (!sol.getAnonima() || isAdm) {
                 solicitanteId = sol.getSolicitante().getId();
                 solicitanteNome = sol.getSolicitante().getNome();
+            } else if (isProprioSolicitante) {
+                solicitanteId = sol.getSolicitante().getId();
+                solicitanteNome = "Anônimo";
             } else {
                 solicitanteNome = "Anônimo";
             }
@@ -602,6 +613,43 @@ public class SolicitacaoService {
                 sol.getAtendente() != null ? sol.getAtendente().getId() : null,
                 sol.getAtendente() != null ? sol.getAtendente().getNome() : null
         );
+    }
+
+    private void validarArquivo(MultipartFile arquivo) {
+        String contentType = arquivo.getContentType();
+        if (contentType == null || !TIPOS_IMAGEM_ACEITOS.contains(contentType)) {
+            throw new RegraDeNegocioException("Tipo de arquivo não permitido. Use JPEG, PNG ou WebP.");
+        }
+        if (arquivo.getSize() > 5L * 1024 * 1024) {
+            throw new RegraDeNegocioException("Tamanho máximo por imagem é de 5MB.");
+        }
+    }
+
+    private ImagemSolicitacao salvarArquivoImagem(MultipartFile arquivo, Solicitacao sol) {
+        String contentType = arquivo.getContentType();
+        String ext = obterExtensao(arquivo.getOriginalFilename(), contentType);
+        String filename = sol.getId() + "_" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ext;
+
+        try {
+            Path dir = Paths.get("uploads", "solicitacoes", sol.getId().toString());
+            Files.createDirectories(dir);
+            Files.copy(arquivo.getInputStream(), dir.resolve(filename));
+        } catch (IOException e) {
+            throw new RegraDeNegocioException("Erro ao salvar imagem");
+        }
+
+        ImagemSolicitacao imagem = new ImagemSolicitacao();
+        imagem.setSolicitacao(sol);
+        imagem.setUrl("uploads/solicitacoes/" + sol.getId() + "/" + filename);
+        imagem.setDataUpload(LocalDateTime.now());
+        ImagemSolicitacao salva = imagemRepository.save(imagem);
+        sol.getImagens().add(salva);
+        return salva;
+    }
+
+    private List<MultipartFile> filtrarNaoVazios(List<MultipartFile> arquivos) {
+        if (arquivos == null) return List.of();
+        return arquivos.stream().filter(f -> f != null && !f.isEmpty()).toList();
     }
 
     private String obterExtensao(String nomeOriginal, String contentType) {
