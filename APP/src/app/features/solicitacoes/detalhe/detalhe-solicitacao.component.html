@@ -29,6 +29,83 @@
   <!-- Conteúdo -->
   <div *ngIf="!carregando && solicitacao" class="detalhe-body">
 
+    <!-- Formulário de edição inline -->
+    <div class="card form-editar-card" *ngIf="showFormEditar">
+      <h2 class="card-title">Editar Solicitação</h2>
+
+      <div class="form-group">
+        <label class="form-label">Título <span class="required">*</span></label>
+        <input class="form-input" type="text" [(ngModel)]="editarDTO.titulo" maxlength="120" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Descrição <span class="required">*</span></label>
+        <textarea class="form-input form-textarea" rows="4" [(ngModel)]="editarDTO.descricao"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Categoria <span class="required">*</span></label>
+        <select class="form-input form-select" [(ngModel)]="editarDTO.categoriaId">
+          <option [ngValue]="null" disabled>
+            {{ carregandoCategorias ? 'Carregando...' : 'Selecione...' }}
+          </option>
+          <option *ngFor="let c of categorias" [value]="c.id">{{ c.nome }}</option>
+        </select>
+      </div>
+
+      <div class="toggle-editar">
+        <label class="toggle-editar-label">
+          <input type="checkbox" [(ngModel)]="editarDTO.editarEndereco" />
+          <span>Atualizar endereço</span>
+        </label>
+      </div>
+
+      <div class="endereco-editar" *ngIf="editarDTO.editarEndereco">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">CEP</label>
+            <input class="form-input" type="text" [(ngModel)]="editarDTO.endereco.cep" maxlength="9" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Número</label>
+            <input class="form-input" type="text" [(ngModel)]="editarDTO.endereco.numero" maxlength="20" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Logradouro</label>
+          <input class="form-input" type="text" [(ngModel)]="editarDTO.endereco.logradouro" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Complemento</label>
+          <input class="form-input" type="text" [(ngModel)]="editarDTO.endereco.complemento" />
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Bairro</label>
+            <input class="form-input" type="text" [(ngModel)]="editarDTO.endereco.bairro" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cidade</label>
+            <input class="form-input" type="text" [(ngModel)]="editarDTO.endereco.cidade" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado (UF)</label>
+          <input class="form-input" type="text" [(ngModel)]="editarDTO.endereco.estado" maxlength="2" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" type="button" (click)="fecharFormEditar()" [disabled]="editarProcessando">Cancelar</button>
+        <button class="btn-success"
+                (click)="confirmarEditar()"
+                [disabled]="!editarDTO.titulo.trim() || !editarDTO.descricao.trim() || !editarDTO.categoriaId || editarProcessando">
+          <mat-icon>save</mat-icon>
+          {{ editarProcessando ? 'Salvando...' : 'Salvar alterações' }}
+        </button>
+      </div>
+    </div>
+
     <!-- ── Linha 1: Status + Informações gerais ── -->
     <div class="detalhe-grid">
 
@@ -76,6 +153,13 @@
         <div *ngIf="solicitacao.status === 'REJEITADA' && motivoRejeicao" class="motivo-rejeicao">
           <p class="info-label">Motivo da Rejeição</p>
           <p class="motivo-texto">{{ motivoRejeicao }}</p>
+        </div>
+
+        <!-- ── Ações Cidadão ── -->
+        <div *ngIf="podeCidadaoEditar" class="acoes-card">
+          <button class="btn-outline btn-editar" (click)="abrirFormEditar()" *ngIf="!showFormEditar">
+            <mat-icon>edit</mat-icon> Editar
+          </button>
         </div>
 
         <!-- ── Ações Gestor ── -->
@@ -183,13 +267,42 @@
     </div>
 
     <!-- ── Imagens ── -->
-    <div class="card" *ngIf="solicitacao.imagens?.length">
-      <h2 class="card-title">Imagens ({{ solicitacao.imagens.length }})</h2>
-      <div class="imagens-grid">
-        <div class="imagem-wrap" *ngFor="let img of solicitacao.imagens">
-          <img [src]="img.url" alt="Imagem da solicitação" class="imagem-thumb" />
+    <div class="card">
+      <div class="card-title-row">
+        <h2 class="card-title">Imagens ({{ solicitacao.imagens?.length ?? 0 }})</h2>
+        <div *ngIf="podeGerenciarImagens && (solicitacao.imagens?.length ?? 0) < 5" class="add-imagem-wrap">
+          <label class="btn-add-imagem" [class.loading]="adicionandoImagens">
+            <mat-icon>add_photo_alternate</mat-icon>
+            {{ adicionandoImagens ? 'Enviando...' : 'Adicionar' }}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              class="add-imagem-input"
+              [disabled]="adicionandoImagens"
+              (change)="onArquivosParaAdicionar($event)" />
+          </label>
         </div>
       </div>
+
+      <div class="imagens-grid" *ngIf="solicitacao.imagens?.length; else semImagens">
+        <div class="imagem-wrap" *ngFor="let img of solicitacao.imagens">
+          <img [src]="img.url" alt="Imagem da solicitação" class="imagem-thumb"
+               (click)="abrirLightbox(img)" title="Clique para ampliar" />
+          <button
+            *ngIf="podeGerenciarImagens"
+            class="imagem-remove-btn"
+            [disabled]="removendoImagemId === img.id"
+            (click)="onRemoverImagem(img.id)"
+            aria-label="Remover imagem">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <ng-template #semImagens>
+        <p class="sem-imagens-txt">Nenhuma imagem anexada.</p>
+      </ng-template>
     </div>
 
     <!-- ── Histórico ── -->
@@ -214,6 +327,16 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" *ngIf="imagemLightbox" (click)="fecharLightbox()">
+  <div class="lightbox-content" (click)="$event.stopPropagation()">
+    <button class="lightbox-close" (click)="fecharLightbox()" aria-label="Fechar">
+      <mat-icon>close</mat-icon>
+    </button>
+    <img [src]="imagemLightbox.url" alt="Imagem ampliada" class="lightbox-img" />
   </div>
 </div>
 
