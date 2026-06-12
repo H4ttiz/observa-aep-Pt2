@@ -24,3 +24,4 @@ APP/.angular/
 # OS
 .DS_Store
 Thumbs.db
+API/uploads/
