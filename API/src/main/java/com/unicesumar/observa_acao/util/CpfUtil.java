@@ -11,7 +11,6 @@ public final class CpfUtil {
 
         if (digits.length() != 11) return false;
 
-        // Rejeita sequências inválidas: 00000000000, 11111111111, ..., 99999999999
         if (digits.matches("(\\d)\\1{10}")) return false;
 
         int firstDigit = calcularDigitoVerificador(digits, 10);

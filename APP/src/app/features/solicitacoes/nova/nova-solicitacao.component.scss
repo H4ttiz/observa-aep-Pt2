@@ -99,3 +99,95 @@ $bg:      #F8FAFC;
   &:hover:not(:disabled) { background: darken(#2E8B7B, 8%); }
   &:disabled { opacity: 0.65; cursor: not-allowed; }
 }
+
+.label-hint {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: $muted;
+  margin-left: 4px;
+}
+
+.upload-area {
+  position: relative;
+  border: 2px dashed $border;
+  border-radius: 10px;
+  background: $bg;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: $primary; }
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 1.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: $muted;
+
+  mat-icon { font-size: 2rem; width: 2rem; height: 2rem; color: $primary; }
+
+  span:first-of-type { font-weight: 500; color: $text; }
+}
+
+.upload-hint {
+  font-size: 0.75rem;
+  color: $muted;
+}
+
+.upload-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.preview-item {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid $border;
+  flex-shrink: 0;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preview-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s;
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+
+  &:hover { background: rgba(220,38,38,0.85); }
+}

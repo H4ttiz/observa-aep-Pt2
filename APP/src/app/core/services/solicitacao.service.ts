@@ -22,8 +22,13 @@ export class SolicitacaoService {
 
   constructor(private http: HttpClient) {}
 
-  criar(dto: SolicitacaoRequest): Observable<SolicitacaoResponse> {
-    return this.http.post<SolicitacaoResponse>(this.apiUrl, dto);
+  criar(dto: SolicitacaoRequest, imagens?: File[]): Observable<SolicitacaoResponse> {
+    const form = new FormData();
+    form.append('solicitacao', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+    if (imagens?.length) {
+      imagens.forEach(img => form.append('imagens', img));
+    }
+    return this.http.post<SolicitacaoResponse>(this.apiUrl, form);
   }
 
   atualizar(id: number, dto: SolicitacaoUpdateRequest): Observable<SolicitacaoResponse> {
@@ -122,10 +127,10 @@ export class SolicitacaoService {
     return this.http.patch<SolicitacaoResponse>(`${this.apiUrl}/${id}/admin-update`, dto);
   }
 
-  adicionarImagem(id: number, arquivo: File): Observable<ImagemSolicitacao> {
+  adicionarImagens(id: number, arquivos: File[]): Observable<ImagemSolicitacao[]> {
     const form = new FormData();
-    form.append('arquivo', arquivo);
-    return this.http.post<ImagemSolicitacao>(`${this.apiUrl}/${id}/imagens`, form);
+    arquivos.forEach(a => form.append('arquivos', a));
+    return this.http.post<ImagemSolicitacao[]>(`${this.apiUrl}/${id}/imagens`, form);
   }
 
   removerImagem(id: number, imgId: number): Observable<void> {
