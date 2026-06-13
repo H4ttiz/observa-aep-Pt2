@@ -21,6 +21,7 @@ import { Categoria } from '../../../core/models/categoria.model';
 import { NavbarTopComponent } from '../../../shared/components/navbar-top/navbar-top.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { LeafletMapComponent } from '../../../shared/components/leaflet-map/leaflet-map.component';
+import { StatusTimelineComponent } from '../../../shared/components/status-timeline/status-timeline.component';
 
 const TIPOS_ACEITOS = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_TAMANHO_MB = 5;
@@ -32,7 +33,7 @@ const MAX_IMAGENS = 5;
   imports: [
     NgIf, NgFor, DatePipe, FormsModule,
     MatIconModule, MatButtonModule,
-    NavbarTopComponent, StatusBadgeComponent, LeafletMapComponent
+    NavbarTopComponent, StatusBadgeComponent, LeafletMapComponent, StatusTimelineComponent
   ],
   templateUrl: './detalhe-solicitacao.component.html',
   styleUrl: './detalhe-solicitacao.component.scss'

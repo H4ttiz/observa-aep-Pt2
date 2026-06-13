@@ -1,0 +1,15 @@
+<div class="wizard-steps">
+  <ng-container *ngFor="let step of steps; let i = index; let last = last">
+
+    <div class="wizard-step" [ngClass]="'step-' + stateOf(i)">
+      <div class="step-circle">
+        <mat-icon *ngIf="stateOf(i) === 'done'">check</mat-icon>
+        <span *ngIf="stateOf(i) !== 'done'">{{ i + 1 }}</span>
+      </div>
+      <span class="step-text">{{ step }}</span>
+    </div>
+
+    <div class="wizard-connector" *ngIf="!last" [class.connector-done]="stateOf(i) === 'done'"></div>
+
+  </ng-container>
+</div>

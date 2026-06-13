@@ -9,6 +9,7 @@ import { Categoria } from '../../../core/models/categoria.model';
 import { SolicitacaoResponse } from '../../../core/models/solicitacao.model';
 import { EnderecoUsuarioFormComponent } from '../../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
 import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
+import { WizardStepsComponent } from '../../../shared/components/wizard-steps/wizard-steps.component';
 
 const TIPOS_ACEITOS = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_TAMANHO_MB = 5;
@@ -17,7 +18,7 @@ const MAX_IMAGENS = 5;
 @Component({
   selector: 'app-nova-solicitacao',
   standalone: true,
-  imports: [NgIf, NgFor, FormsModule, MatIconModule, EnderecoUsuarioFormComponent, FieldErrorComponent],
+  imports: [NgIf, NgFor, FormsModule, MatIconModule, EnderecoUsuarioFormComponent, FieldErrorComponent, WizardStepsComponent],
   templateUrl: './nova-solicitacao.component.html',
   styleUrl: './nova-solicitacao.component.scss'
 })
@@ -28,6 +29,7 @@ export class NovaSolicitacaoComponent implements OnInit, OnDestroy {
   categorias: Categoria[] = [];
   enviando = false;
   submitted = false;
+  etapa: 1 | 2 = 1;
 
   imagensSelecionadas: File[] = [];
   previewUrls: string[] = [];
@@ -91,6 +93,21 @@ export class NovaSolicitacaoComponent implements OnInit, OnDestroy {
     this.previewUrls.splice(index, 1);
   }
 
+  irEtapa2(formRef: NgForm): void {
+    const campos = ['titulo', 'descricao', 'categoriaId'];
+    let valido = true;
+    campos.forEach(campo => {
+      const ctrl = formRef.controls[campo];
+      ctrl?.markAsTouched();
+      if (ctrl?.invalid) valido = false;
+    });
+    if (valido) this.etapa = 2;
+  }
+
+  voltarEtapa1(): void {
+    this.etapa = 1;
+  }
+
   onSubmit(formRef: NgForm): void {
     this.submitted = true;
     this.enderecoForm?.markAllAsTouched();
@@ -126,6 +143,7 @@ export class NovaSolicitacaoComponent implements OnInit, OnDestroy {
   private resetForm(formRef: NgForm): void {
     this.submitted = false;
     this.enviando = false;
+    this.etapa = 1;
     this.form = { titulo: '', descricao: '', categoriaId: null, anonima: false, usarEnderecoUsuario: true };
     this.previewUrls.forEach(url => URL.revokeObjectURL(url));
     this.imagensSelecionadas = [];

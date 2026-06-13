@@ -1,0 +1,22 @@
+<div class="status-timeline" *ngIf="nodes.length">
+  <ng-container *ngFor="let node of nodes; let i = index; let last = last">
+
+    <div class="timeline-step" [ngClass]="'step-' + node.state">
+      <div class="step-marker">
+        <mat-icon *ngIf="node.state === 'done'">check</mat-icon>
+        <mat-icon *ngIf="node.state === 'rejected'">close</mat-icon>
+        <span class="marker-dot" *ngIf="node.state === 'current' || node.state === 'future'"></span>
+      </div>
+      <div class="step-info">
+        <span class="step-label">{{ node.label }}</span>
+        <span class="step-date" *ngIf="node.date">{{ node.date | date:'dd/MM/yy HH:mm' }}</span>
+      </div>
+    </div>
+
+    <div class="timeline-connector"
+         *ngIf="!last"
+         [class.connector-filled]="node.state === 'done' && nodes[i + 1].state !== 'rejected'"
+         [class.connector-rejected]="nodes[i + 1].state === 'rejected'"></div>
+
+  </ng-container>
+</div>

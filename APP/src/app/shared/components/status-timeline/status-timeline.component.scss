@@ -1,0 +1,151 @@
+$primary:   #2E7D32;
+$accent:    #14B8A6;
+$border:    #D8E8DF;
+$muted:     #6B7280;
+$text:      #1F2937;
+$red:       #EF4444;
+$white:     #FFFFFF;
+$gradient:  linear-gradient(135deg, #2E7D32 0%, #14B8A6 100%);
+$font-body: 'Source Sans 3', 'Source Sans Pro', 'Segoe UI', sans-serif;
+
+@keyframes pulsering {
+  0%   { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.5); }
+  70%  { box-shadow: 0 0 0 9px rgba(20, 184, 166, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+}
+
+.status-timeline {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  font-family: $font-body;
+  padding: 0.5rem 0;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 0 0 auto;
+  min-width: 96px;
+}
+
+.step-marker {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+  background: $white;
+  border: 2px solid $border;
+  transition: all 0.2s;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; color: $white; }
+}
+
+.step-done .step-marker {
+  background: $gradient;
+  border-color: transparent;
+}
+
+.step-current .step-marker {
+  background: $white;
+  border: 3px solid $accent;
+  animation: pulsering 2.2s ease-out infinite;
+
+  .marker-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: $accent;
+  }
+}
+
+.step-future .step-marker {
+  background: $white;
+  border: 2px solid $border;
+
+  .marker-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: $border;
+  }
+}
+
+.step-rejected .step-marker {
+  background: $red;
+  border-color: transparent;
+}
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $text;
+}
+
+.step-current .step-label { color: $accent; }
+.step-future .step-label { color: $muted; font-weight: 500; }
+.step-rejected .step-label { color: $red; }
+
+.step-date {
+  font-size: 0.7rem;
+  color: $muted;
+}
+
+.timeline-connector {
+  flex: 1 1 auto;
+  height: 3px;
+  margin-top: 17px;
+  border-radius: 2px;
+  background: $border;
+  min-width: 20px;
+
+  &.connector-filled { background: $gradient; }
+  &.connector-rejected { background: linear-gradient(90deg, $accent 0%, $red 100%); }
+}
+
+// ── Vertical no mobile ──
+@media (max-width: 767px) {
+  .status-timeline {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.25rem 0;
+  }
+
+  .timeline-step {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    min-width: 0;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .step-marker { margin-bottom: 0; }
+
+  .step-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .timeline-connector {
+    width: 3px;
+    height: 24px;
+    min-width: 0;
+    margin: 0 0 0 17px;
+    flex: none;
+  }
+}

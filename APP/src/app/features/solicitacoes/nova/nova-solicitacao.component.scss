@@ -1,8 +1,16 @@
-$primary: #2E8B7B;
-$text:    #1E293B;
-$muted:   #64748B;
-$border:  #E2E8F0;
+$primary: #2E7D32;
+$accent:  #14B8A6;
+$hover:   #256D29;
+$text:    #1F2937;
+$muted:   #6B7280;
+$border:  #D8E8DF;
 $bg:      #F8FAFC;
+$error:   #EF4444;
+$font-body: 'Source Sans 3', 'Source Sans Pro', 'Segoe UI', sans-serif;
+
+@keyframes dashSpin {
+  to { stroke-dashoffset: -48; }
+}
 
 .form-group {
   margin-bottom: 1.25rem;
@@ -15,7 +23,7 @@ $bg:      #F8FAFC;
     margin-bottom: 0.4rem;
   }
 
-  .required { color: #DC2626; }
+  .required { color: $error; }
 }
 
 .form-input {
@@ -78,6 +86,13 @@ $bg:      #F8FAFC;
 
 .form-actions {
   margin-top: 1.5rem;
+
+  &.wizard-actions {
+    display: flex;
+    gap: 0.75rem;
+
+    .btn-primary { flex: 1; justify-content: center; }
+  }
 }
 
 .btn-primary {
@@ -91,13 +106,36 @@ $bg:      #F8FAFC;
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 600;
+  font-family: $font-body;
   cursor: pointer;
   transition: background 0.2s, opacity 0.2s;
 
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
-  &:hover:not(:disabled) { background: darken(#2E8B7B, 8%); }
+  &:hover:not(:disabled) { background: $hover; }
   &:disabled { opacity: 0.65; cursor: not-allowed; }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.7rem 1.5rem;
+  background: transparent;
+  color: $primary;
+  border: 1.5px solid $primary;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: $font-body;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  &:hover { background: rgba(46,125,50,0.06); }
+
+  &.back-btn { flex: 0 0 auto; }
 }
 
 .label-hint {
@@ -110,26 +148,38 @@ $bg:      #F8FAFC;
 .upload-area {
   position: relative;
   border: 2px dashed $border;
-  border-radius: 10px;
+  border-radius: 12px;
   background: $bg;
-  transition: border-color 0.2s;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
 
-  &:hover { border-color: $primary; }
+  &:hover {
+    border-color: $accent;
+    background: rgba(20, 184, 166, 0.04);
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.08);
+  }
 }
 
 .upload-label {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 1.25rem;
+  gap: 8px;
+  padding: 1.5rem 1.25rem;
   cursor: pointer;
   font-size: 0.875rem;
   color: $muted;
 
-  mat-icon { font-size: 2rem; width: 2rem; height: 2rem; color: $primary; }
+  mat-icon {
+    font-size: 2.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: $accent;
+    transition: color 0.2s;
+  }
 
-  span:first-of-type { font-weight: 500; color: $text; }
+  span:first-of-type { font-weight: 600; color: $text; }
+
+  .upload-area:hover & mat-icon { color: $primary; }
 }
 
 .upload-hint {
@@ -157,10 +207,14 @@ $bg:      #F8FAFC;
   position: relative;
   width: 90px;
   height: 90px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   border: 1.5px solid $border;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s, transform 0.2s;
+
+  &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.14); transform: translateY(-2px); }
 }
 
 .preview-img {
