@@ -1,12 +1,12 @@
-$primary:  #2E8B7B;
-$accent:   #59C3B2;
+$primary:  #2E7D32;
+$accent:   #14B8A6;
 $white:    #FFFFFF;
 $bg:       #F8FAFC;
-$text:     #1E293B;
-$text2:    #334155;
-$muted:    #64748B;
-$border:   #E2E8F0;
-$red:      #DC2626;
+$text:     #1F2937;
+$text2:    #374151;
+$muted:    #6B7280;
+$border:   #D8E8DF;
+$red:      #EF4444;
 
 :host {
   display: contents;
@@ -58,7 +58,7 @@ $red:      #DC2626;
     font-size: 0.8rem;
     font-weight: 600;
     color: $muted;
-    font-family: 'Inter', monospace;
+    font-family: 'Source Sans 3', monospace;
   }
 
   .close-btn {
@@ -83,7 +83,7 @@ $red:      #DC2626;
   color: $text;
   margin: 0 0 1.25rem;
   line-height: 1.4;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 // Info grid
@@ -156,7 +156,7 @@ $red:      #DC2626;
     letter-spacing: 0.5px;
     color: $muted;
     margin: 0 0 0.5rem;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
 
     &.rejeicao-title { color: $red; }
   }

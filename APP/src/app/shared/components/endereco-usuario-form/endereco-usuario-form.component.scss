@@ -1,11 +1,11 @@
-$primary:   #2E8B7B;
-$accent:    #59C3B2;
+$primary:   #2E7D32;
+$accent:    #14B8A6;
 $white:     #FFFFFF;
 $bg-light:  #F8FAFC;
-$text:      #1E293B;
-$text2:     #334155;
-$muted:     #64748B;
-$border:    #E2E8F0;
+$text:      #1F2937;
+$text2:     #374151;
+$muted:     #6B7280;
+$border:    #D8E8DF;
 $red:       #EF4444;
 
 .endereco-fieldset {
@@ -73,7 +73,7 @@ $red:       #EF4444;
   border: 1.5px solid $border;
   border-radius: 8px;
   font-size: 0.875rem;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif;
   color: $text;
   background: $white;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -82,7 +82,7 @@ $red:       #EF4444;
 
   &:focus {
     border-color: $accent;
-    box-shadow: 0 0 0 3px rgba(89,195,178,0.15);
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.15);
   }
 
   &::placeholder { color: $muted; }
@@ -95,7 +95,7 @@ $red:       #EF4444;
 
 .form-select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748B' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B7280' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 2rem;

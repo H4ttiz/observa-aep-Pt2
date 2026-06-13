@@ -1,10 +1,56 @@
 @use '@angular/material' as mat;
 
-// ===== Material M2 theme with teal palette =====
+// ===== Material M2 theme — paleta institucional verde / verde-água =====
 @include mat.core();
 
-$primary-palette: mat.define-palette(mat.$teal-palette, 700, 400, 900);
-$accent-palette:  mat.define-palette(mat.$cyan-palette, 400, 100, 700);
+// Verde principal (#2E7D32 = Material Green 800)
+$green-palette: (
+  50:  #E8F5E9,
+  100: #C8E6C9,
+  200: #A5D6A7,
+  300: #81C784,
+  400: #66BB6A,
+  500: #4CAF50,
+  600: #43A047,
+  700: #388E3C,
+  800: #2E7D32,
+  900: #1B5E20,
+  A100: #B9F6CA,
+  A200: #69F0AE,
+  A400: #00E676,
+  A700: #00C853,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87), 100: rgba(0, 0, 0, 0.87), 200: rgba(0, 0, 0, 0.87), 300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87), 500: white, 600: white, 700: white, 800: white, 900: white,
+    A100: rgba(0, 0, 0, 0.87), A200: rgba(0, 0, 0, 0.87), A400: rgba(0, 0, 0, 0.87), A700: rgba(0, 0, 0, 0.87),
+  )
+);
+
+// Verde-água (#14B8A6)
+$aqua-palette: (
+  50:  #E0FAF6,
+  100: #B3F0E6,
+  200: #80E5D4,
+  300: #4DDAC2,
+  400: #26D1B5,
+  500: #14B8A6,
+  600: #0FA897,
+  700: #0F9D8C,
+  800: #0D8A7A,
+  900: #096156,
+  A100: #9CFFEF,
+  A200: #69FFE3,
+  A400: #36FFD8,
+  A700: #1CFFD1,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87), 100: rgba(0, 0, 0, 0.87), 200: rgba(0, 0, 0, 0.87), 300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87), 500: white, 600: white, 700: white, 800: white, 900: white,
+    A100: rgba(0, 0, 0, 0.87), A200: rgba(0, 0, 0, 0.87), A400: rgba(0, 0, 0, 0.87), A700: rgba(0, 0, 0, 0.87),
+  )
+);
+
+$primary-palette: mat.define-palette($green-palette, 800, 400, 900);
+$accent-palette:  mat.define-palette($aqua-palette, 500, 200, 700);
 $warn-palette:    mat.define-palette(mat.$red-palette);
 
 $theme: mat.define-light-theme((
@@ -14,7 +60,7 @@ $theme: mat.define-light-theme((
     warn:    $warn-palette
   ),
   typography: mat.define-typography-config(
-    $font-family: "'Inter', 'Segoe UI', sans-serif"
+    $font-family: "'Source Sans 3', 'Source Sans Pro', 'Segoe UI', sans-serif"
   ),
   density: 0
 ));
@@ -30,25 +76,53 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Source Sans 3', 'Source Sans Pro', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: #F5F7F8;
-  color: #2C3E50;
+  background-color: #FFFFFF;
+  color: #1F2937;
+}
+
+// ===== Tipografia de títulos =====
+h1, h2, h3, h4, h5, h6, .font-title {
+  font-family: 'Montserrat', 'Segoe UI', sans-serif;
+  font-weight: 600;
+}
+
+// ===== Foco visível (acessibilidade) =====
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #14B8A6;
+  outline-offset: 2px;
 }
 
 // ===== Snackbar overrides =====
 .snack-error .mdc-snackbar__surface,
 .toast-error .mdc-snackbar__surface {
-  background-color: #C0392B !important;
+  background-color: #EF4444 !important;
 }
 
 .snack-success .mdc-snackbar__surface,
 .toast-success .mdc-snackbar__surface {
-  background-color: #2E8B7B !important;
+  background-color: #22C55E !important;
 }
 
 .mat-mdc-snack-bar-label {
-  font-family: 'Inter', sans-serif !important;
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
+}
+
+// ===== Material tab indicator — verde-água =====
+.mat-mdc-tab-group,
+.mat-mdc-tab-nav-bar {
+  --mdc-tab-indicator-active-indicator-color: #14B8A6;
+  --mat-tab-header-active-label-text-color: #2E7D32;
+  --mat-tab-header-active-ripple-color: rgba(20,184,166,0.15);
+  --mat-tab-header-inactive-ripple-color: rgba(46,125,50,0.08);
+  --mat-tab-header-active-focus-label-text-color: #2E7D32;
+  --mat-tab-header-active-hover-label-text-color: #2E7D32;
 }
 
 // ===== Scrollbar suave =====
@@ -56,6 +130,6 @@ html, body {
   width: 6px;
   height: 6px;
 }
-::-webkit-scrollbar-track { background: #F5F7F8; }
-::-webkit-scrollbar-thumb { background: #DDE5E3; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #59C3B2; }
+::-webkit-scrollbar-track { background: #F8FAFC; }
+::-webkit-scrollbar-thumb { background: #D8E8DF; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #14B8A6; }
