@@ -204,6 +204,10 @@
 // Modal small
 .modal-sm { max-width: 380px; }
 
+// Modal de criação de usuário — ligeiramente mais largo para acomodar
+// o formulário de 2 etapas (endereço) sem scroll
+.modal-usuario { max-width: 540px; }
+
 .modal-warning-icon {
   width: 48px;
   height: 48px;
@@ -215,4 +219,16 @@
   margin-bottom: 1rem;
 
   mat-icon { color: #D97706; font-size: 26px; width: 26px; height: 26px; }
+}
+
+// Linha de 2 colunas usada em campos CPF + Celular na etapa 1
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }

@@ -21,6 +21,7 @@ import { PasswordInputComponent } from '../../../shared/components/password-inpu
 import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
 import { PaginacaoComponent } from '../../../shared/components/paginacao/paginacao.component';
 import { EnderecoUsuarioFormComponent } from '../../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
+import { WizardStepsComponent } from '../../../shared/components/wizard-steps/wizard-steps.component';
 import { LogService } from '../../../core/services/log.service';
 
 @Component({
@@ -32,7 +33,7 @@ import { LogService } from '../../../core/services/log.service';
     NavbarTopComponent, NavbarLateralComponent,
     StatusBadgeComponent,
     PasswordInputComponent, FieldErrorComponent, PaginacaoComponent,
-    EnderecoUsuarioFormComponent
+    EnderecoUsuarioFormComponent, WizardStepsComponent
   ],
   templateUrl: './dashboard-admin.component.html',
   styleUrl: './dashboard-admin.component.scss'
@@ -95,7 +96,9 @@ export class DashboardAdminComponent implements OnInit {
   showModalConfirmDesativarCategoria = false;
   showModalConfirmExcluirCategoria = false;
 
+  modalStep: 1 | 2 = 1;
   modalSubmitted = false;
+  modalStep1Submitted = false;
   modalCategoriaSubmitted = false;
 
   confirmDeleteTarget: Usuario | null = null;
@@ -213,15 +216,35 @@ export class DashboardAdminComponent implements OnInit {
 
   onAbrirModalUsuario(): void {
     this.novoUsuario = { nome: '', email: '', senha: '', confirmarSenha: '', cpf: '', celular: '', tipoUsuario: '' };
+    this.modalStep = 1;
     this.modalSubmitted = false;
+    this.modalStep1Submitted = false;
     this.showModalUsuario = true;
+  }
+
+  irParaEtapa2Modal(): void {
+    this.modalStep1Submitted = true;
+    const u = this.novoUsuario;
+    const emailValido = !!u.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u.email);
+    const passo1Ok =
+      !!u.nome?.trim() &&
+      emailValido &&
+      !!u.cpf?.trim() &&
+      (u.senha?.length ?? 0) >= 8 &&
+      !!u.confirmarSenha?.trim() &&
+      !!u.tipoUsuario;
+    if (passo1Ok) this.modalStep = 2;
+  }
+
+  voltarEtapa1Modal(): void {
+    this.modalStep = 1;
   }
 
   onCriarUsuario(formRef: any): void {
     this.modalSubmitted = true;
     this.enderecoFormModal?.markAllAsTouched();
 
-    if (formRef.invalid || !this.enderecoFormModal?.valid) return;
+    if (!this.enderecoFormModal?.valid) return;
 
     const payload = { ...this.novoUsuario, enderecoUsuario: this.enderecoFormModal!.value };
 
@@ -419,6 +442,9 @@ export class DashboardAdminComponent implements OnInit {
     this.carregarSolicitacoes(pagina);
     document.getElementById('solicitacoes-tab')?.scrollIntoView({ behavior: 'smooth' });
   }
+
+  sidebarOpen = false;
+  toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
 
   logout(): void { this.auth.logout(); }
 }

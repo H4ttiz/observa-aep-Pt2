@@ -1,21 +1,21 @@
-$primary: #2E8B7B;
-$accent: #59C3B2;
-$bg: #F5F7F8;
+$primary: #2E7D32;
+$accent: #14B8A6;
+$bg: #F8FAFC;
 $white: #FFFFFF;
-$text: #2C3E50;
-$muted: #7F8C8D;
+$text: #1F2937;
+$muted: #6B7280;
 
 .dash-wrapper {
   min-height: 100vh;
   background: $bg;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif;
 }
 
 .dash-header {
   background: $white;
-  border-bottom: 1px solid #E8ECEB;
+  border-bottom: 1px solid #D8E8DF;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@ $muted: #7F8C8D;
     font-weight: 700;
     color: $primary;
 
-    mat-icon { font-size: 28px; width: 28px; height: 28px; }
+    .brand-logo { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; display: block; }
   }
 
   .user-area {
@@ -42,7 +42,7 @@ $muted: #7F8C8D;
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(89,195,178,0.12);
+      background: rgba(20,184,166,0.12);
       color: $primary;
       padding: 6px 14px;
       border-radius: 50px;
@@ -82,7 +82,7 @@ $muted: #7F8C8D;
   .welcome-icon-wrap {
     width: 72px;
     height: 72px;
-    background: linear-gradient(135deg, #59C3B2, #2E8B7B);
+    background: linear-gradient(135deg, #14B8A6, #2E7D32);
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -109,7 +109,7 @@ $muted: #7F8C8D;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(89,195,178,0.12);
+    background: rgba(20,184,166,0.12);
     color: $primary;
     padding: 6px 16px;
     border-radius: 50px;

@@ -1,8 +1,8 @@
 <div class="dashboard-layout">
-  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()"></app-navbar-top>
+  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()" (menuToggle)="toggleSidebar()"></app-navbar-top>
 
   <div class="dashboard-body">
-    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" (itemSelected)="setTab($event)"></app-navbar-lateral>
+    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" [mobileOpen]="sidebarOpen" (mobileOpenChange)="sidebarOpen = $event" (itemSelected)="setTab($event)"></app-navbar-lateral>
 
     <main class="content-area">
 
@@ -78,11 +78,11 @@
             </thead>
             <tbody>
               <tr *ngFor="let log of logsExibidos">
-                <td class="col-id">#{{ log.id }}</td>
-                <td><app-status-badge [tipoLog]="log.tipoLog"></app-status-badge></td>
-                <td class="col-email">{{ log.nomeUsuario }}</td>
-                <td class="col-desc">{{ log.descricao }}</td>
-                <td class="col-date">{{ log.dataCriacao | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td class="col-id" data-label="ID">#{{ log.id }}</td>
+                <td data-label="Tipo"><app-status-badge [tipoLog]="log.tipoLog"></app-status-badge></td>
+                <td class="col-email" data-label="Responsável">{{ log.nomeUsuario }}</td>
+                <td class="col-desc" data-label="Descrição">{{ log.descricao }}</td>
+                <td class="col-date" data-label="Data/Hora">{{ log.dataCriacao | date:'dd/MM/yyyy HH:mm:ss' }}</td>
               </tr>
               <tr *ngIf="!logsExibidos.length">
                 <td colspan="5" class="empty-row">Nenhum log encontrado.</td>
@@ -121,18 +121,18 @@
             </thead>
             <tbody>
               <tr *ngFor="let s of solicitacoes">
-                <td class="col-id">#{{ s.id }}</td>
-                <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoriaNome }}</td>
-                <td><app-status-badge [status]="s.status"></app-status-badge></td>
-                <td>
+                <td class="col-id" data-label="ID">#{{ s.id }}</td>
+                <td class="col-titulo" data-label="Título">{{ s.titulo }}</td>
+                <td data-label="Categoria">{{ s.categoriaNome }}</td>
+                <td data-label="Status"><app-status-badge [status]="s.status"></app-status-badge></td>
+                <td data-label="Solicitante">
                   <span *ngIf="s.anonima && s.solicitanteNome === 'Anônimo'" class="badge-anonimo-admin">
                     <mat-icon>person_off</mat-icon> Anônimo
                   </span>
                   <span *ngIf="!(s.anonima && s.solicitanteNome === 'Anônimo')">{{ s.solicitanteNome }}</span>
                 </td>
-                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
-                <td>
+                <td data-label="Data">{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td data-label="Ações">
                   <button class="btn-link" (click)="verDetalhes(s)">
                     <mat-icon>open_in_new</mat-icon> Ver
                   </button>
@@ -184,16 +184,16 @@
             </thead>
             <tbody>
               <tr *ngFor="let u of usuarios">
-                <td class="col-id">#{{ u.id }}</td>
-                <td class="col-titulo">{{ u.nome }}</td>
-                <td class="col-email">{{ u.email }}</td>
-                <td><span class="badge-perfil badge-{{ u.tipoUsuario }}">{{ u.tipoUsuario }}</span></td>
-                <td>
+                <td class="col-id" data-label="ID">#{{ u.id }}</td>
+                <td class="col-titulo" data-label="Nome">{{ u.nome }}</td>
+                <td class="col-email" data-label="Email">{{ u.email }}</td>
+                <td data-label="Perfil"><span class="badge-perfil badge-{{ u.tipoUsuario }}">{{ u.tipoUsuario }}</span></td>
+                <td data-label="Status">
                   <span class="badge-ativo"   *ngIf="u.ativo">Ativo</span>
                   <span class="badge-inativo" *ngIf="!u.ativo">Inativo</span>
                 </td>
-                <td>{{ u.dataCriacao | date:'dd/MM/yyyy' }}</td>
-                <td class="acoes-col">
+                <td data-label="Criação">{{ u.dataCriacao | date:'dd/MM/yyyy' }}</td>
+                <td class="acoes-col" data-label="Ações">
                   <button class="btn-link" (click)="verUsuario(u)" matTooltip="Ver detalhes">
                     <mat-icon>visibility</mat-icon> Ver mais
                   </button>
@@ -309,113 +309,139 @@
   </div>
 </div>
 
-<!-- Modal: Criar Usuário -->
+<!-- Modal: Criar Usuário (wizard 2 etapas) -->
 <div class="modal-overlay" *ngIf="showModalUsuario" (click)="showModalUsuario = false">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal modal-usuario" (click)="$event.stopPropagation()">
+
     <h3 class="modal-title">Criar Novo Usuário</h3>
+
+    <app-wizard-steps
+      [steps]="['Dados do Usuário', 'Endereço']"
+      [current]="modalStep">
+    </app-wizard-steps>
 
     <form #formCriarUsuario="ngForm" (ngSubmit)="onCriarUsuario(formCriarUsuario)" novalidate>
 
-      <div class="form-group">
-        <label>Nome <span class="required">*</span></label>
-        <input class="form-input"
-               [class.input-error]="nomeRef.invalid && (nomeRef.touched || modalSubmitted)"
-               type="text"
-               [(ngModel)]="novoUsuario.nome"
-               name="nomeModal"
-               #nomeRef="ngModel"
-               required
-               placeholder="Nome completo" />
-        <app-field-error [errors]="nomeRef.errors" [touched]="nomeRef.touched" [submitted]="modalSubmitted"></app-field-error>
-      </div>
+      <!-- ── Etapa 1: Dados do Usuário ── -->
+      <ng-container *ngIf="modalStep === 1">
 
-      <div class="form-group">
-        <label>Email <span class="required">*</span></label>
-        <input class="form-input"
-               [class.input-error]="emailRef.invalid && (emailRef.touched || modalSubmitted)"
-               type="email"
-               [(ngModel)]="novoUsuario.email"
-               name="emailModal"
-               #emailRef="ngModel"
-               required email
-               placeholder="email@prefeitura.gov.br" />
-        <app-field-error [errors]="emailRef.errors" [touched]="emailRef.touched" [submitted]="modalSubmitted"></app-field-error>
-      </div>
+        <div class="form-group">
+          <label>Nome <span class="required">*</span></label>
+          <input class="form-input"
+                 [class.input-error]="nomeRef.invalid && (nomeRef.touched || modalStep1Submitted)"
+                 type="text"
+                 [(ngModel)]="novoUsuario.nome"
+                 name="nomeModal"
+                 #nomeRef="ngModel"
+                 required
+                 placeholder="Nome completo" />
+          <app-field-error [errors]="nomeRef.errors" [touched]="nomeRef.touched" [submitted]="modalStep1Submitted"></app-field-error>
+        </div>
 
-      <div class="form-group">
-        <label>CPF <span class="required">*</span></label>
-        <input class="form-input"
-               [class.input-error]="cpfRef.invalid && (cpfRef.touched || modalSubmitted)"
-               type="text"
-               [(ngModel)]="novoUsuario.cpf"
-               name="cpfModal"
-               #cpfRef="ngModel"
-               required
-               placeholder="000.000.000-00" />
-        <app-field-error [errors]="cpfRef.errors" [touched]="cpfRef.touched" [submitted]="modalSubmitted"></app-field-error>
-      </div>
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input class="form-input"
+                 [class.input-error]="emailRef.invalid && (emailRef.touched || modalStep1Submitted)"
+                 type="email"
+                 [(ngModel)]="novoUsuario.email"
+                 name="emailModal"
+                 #emailRef="ngModel"
+                 required email
+                 placeholder="email@prefeitura.gov.br" />
+          <app-field-error [errors]="emailRef.errors" [touched]="emailRef.touched" [submitted]="modalStep1Submitted"></app-field-error>
+        </div>
 
-      <div class="form-group">
-        <label>Celular <span class="muted-label">(opcional)</span></label>
-        <input class="form-input" type="tel"
-               [(ngModel)]="novoUsuario.celular"
-               name="celularModal"
-               placeholder="(00) 00000-0000" />
-      </div>
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label>CPF <span class="required">*</span></label>
+            <input class="form-input"
+                   [class.input-error]="cpfRef.invalid && (cpfRef.touched || modalStep1Submitted)"
+                   type="text"
+                   [(ngModel)]="novoUsuario.cpf"
+                   name="cpfModal"
+                   #cpfRef="ngModel"
+                   required
+                   maxlength="14"
+                   placeholder="000.000.000-00" />
+            <app-field-error [errors]="cpfRef.errors" [touched]="cpfRef.touched" [submitted]="modalStep1Submitted"></app-field-error>
+          </div>
 
-      <div class="form-group">
-        <label>Senha <span class="required">*</span></label>
-        <app-password-input
-          [(ngModel)]="novoUsuario.senha"
-          name="senhaModal"
-          #senhaModalRef="ngModel"
-          required
-          minlength="8"
-          autocomplete="new-password"
-          placeholder="Mínimo 8 caracteres">
-        </app-password-input>
-        <app-field-error [errors]="senhaModalRef.errors" [touched]="senhaModalRef.touched" [submitted]="modalSubmitted"></app-field-error>
-      </div>
+          <div class="form-group">
+            <label>Celular <span class="muted-label">(opcional)</span></label>
+            <input class="form-input" type="tel"
+                   [(ngModel)]="novoUsuario.celular"
+                   name="celularModal"
+                   placeholder="(00) 00000-0000" />
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label>Confirmar Senha <span class="required">*</span></label>
-        <app-password-input
-          [(ngModel)]="novoUsuario.confirmarSenha"
-          name="confirmarSenhaModal"
-          #confirmarSenhaModalRef="ngModel"
-          required
-          autocomplete="new-password"
-          placeholder="Repita a senha">
-        </app-password-input>
-        <app-field-error [errors]="confirmarSenhaModalRef.errors" [touched]="confirmarSenhaModalRef.touched" [submitted]="modalSubmitted"></app-field-error>
-      </div>
+        <div class="form-group">
+          <label>Senha <span class="required">*</span></label>
+          <app-password-input
+            [(ngModel)]="novoUsuario.senha"
+            name="senhaModal"
+            #senhaModalRef="ngModel"
+            required
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="Mínimo 8 caracteres">
+          </app-password-input>
+          <app-field-error [errors]="senhaModalRef.errors" [touched]="senhaModalRef.touched" [submitted]="modalStep1Submitted"></app-field-error>
+        </div>
 
-      <div class="form-group">
-        <label>Perfil <span class="required">*</span></label>
-        <select class="form-input form-select"
-                [class.input-error]="tipoRef.invalid && (tipoRef.touched || modalSubmitted)"
-                [(ngModel)]="novoUsuario.tipoUsuario"
-                name="tipoModal"
-                #tipoRef="ngModel"
-                required>
-          <option value="">Selecione</option>
-          <option value="ATENDENTE">Atendente</option>
-          <option value="GESTOR">Gestor</option>
-          <option value="ADMINISTRADOR">Administrador</option>
-        </select>
-        <app-field-error [errors]="tipoRef.errors" [touched]="tipoRef.touched" [submitted]="modalSubmitted"></app-field-error>
-      </div>
+        <div class="form-group">
+          <label>Confirmar Senha <span class="required">*</span></label>
+          <app-password-input
+            [(ngModel)]="novoUsuario.confirmarSenha"
+            name="confirmarSenhaModal"
+            #confirmarSenhaModalRef="ngModel"
+            required
+            autocomplete="new-password"
+            placeholder="Repita a senha">
+          </app-password-input>
+          <app-field-error [errors]="confirmarSenhaModalRef.errors" [touched]="confirmarSenhaModalRef.touched" [submitted]="modalStep1Submitted"></app-field-error>
+        </div>
 
-      <div class="form-group">
+        <div class="form-group">
+          <label>Perfil <span class="required">*</span></label>
+          <select class="form-input form-select"
+                  [class.input-error]="tipoRef.invalid && (tipoRef.touched || modalStep1Submitted)"
+                  [(ngModel)]="novoUsuario.tipoUsuario"
+                  name="tipoModal"
+                  #tipoRef="ngModel"
+                  required>
+            <option value="">Selecione o perfil</option>
+            <option value="ATENDENTE">Atendente</option>
+            <option value="GESTOR">Gestor</option>
+            <option value="ADMINISTRADOR">Administrador</option>
+          </select>
+          <app-field-error [errors]="tipoRef.errors" [touched]="tipoRef.touched" [submitted]="modalStep1Submitted"></app-field-error>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-outline" type="button" (click)="showModalUsuario = false">Cancelar</button>
+          <button class="btn-primary" type="button" (click)="irParaEtapa2Modal()">
+            Avançar <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+
+      </ng-container>
+
+      <!-- ── Etapa 2: Endereço ── -->
+      <ng-container *ngIf="modalStep === 2">
+
         <app-endereco-usuario-form [submitted]="modalSubmitted"></app-endereco-usuario-form>
-      </div>
 
-      <div class="modal-actions">
-        <button class="btn-outline" type="button" (click)="showModalUsuario = false">Cancelar</button>
-        <button class="btn-primary" type="submit">
-          <mat-icon>person_add</mat-icon> Criar
-        </button>
-      </div>
+        <div class="modal-actions">
+          <button class="btn-outline" type="button" (click)="voltarEtapa1Modal()">
+            <mat-icon>arrow_back</mat-icon> Voltar
+          </button>
+          <button class="btn-primary" type="submit">
+            <mat-icon>person_add</mat-icon> Criar Usuário
+          </button>
+        </div>
+
+      </ng-container>
 
     </form>
   </div>

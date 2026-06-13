@@ -1,8 +1,8 @@
 <div class="dashboard-layout">
-  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()"></app-navbar-top>
+  <app-navbar-top [nomeUsuario]="nome" (logoutEvt)="logout()" (menuToggle)="toggleSidebar()"></app-navbar-top>
 
   <div class="dashboard-body">
-    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" (itemSelected)="setTab($event)"></app-navbar-lateral>
+    <app-navbar-lateral [items]="navItems" [activeItem]="activeTab" [mobileOpen]="sidebarOpen" (mobileOpenChange)="sidebarOpen = $event" (itemSelected)="setTab($event)"></app-navbar-lateral>
 
     <main class="content-area">
 
@@ -61,14 +61,14 @@
             </thead>
             <tbody>
               <tr *ngFor="let s of filaAtendimento">
-                <td class="col-id">#{{ s.id }}</td>
-                <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoriaNome }}</td>
-                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
-                <td [class.prazo-atrasado]="estaAtrasada(s)">
+                <td class="col-id" data-label="ID">#{{ s.id }}</td>
+                <td class="col-titulo" data-label="Título">{{ s.titulo }}</td>
+                <td data-label="Categoria">{{ s.categoriaNome }}</td>
+                <td data-label="Prioridade"><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
+                <td data-label="Prazo" [class.prazo-atrasado]="estaAtrasada(s)">
                   {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
                 </td>
-                <td class="acoes-col">
+                <td class="acoes-col" data-label="Ações">
                   <button class="btn-link" (click)="verDetalhes(s)">
                     <mat-icon>open_in_new</mat-icon> Ver
                   </button>
@@ -111,16 +111,16 @@
             </thead>
             <tbody>
               <tr *ngFor="let s of minhasSolicitacoes" [class.row-atrasada]="estaAtrasada(s)">
-                <td class="col-id">#{{ s.id }}</td>
-                <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoriaNome }}</td>
-                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
-                <td><app-status-badge [status]="s.status"></app-status-badge></td>
-                <td [class.prazo-atrasado]="estaAtrasada(s)">
+                <td class="col-id" data-label="ID">#{{ s.id }}</td>
+                <td class="col-titulo" data-label="Título">{{ s.titulo }}</td>
+                <td data-label="Categoria">{{ s.categoriaNome }}</td>
+                <td data-label="Prioridade"><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
+                <td data-label="Status"><app-status-badge [status]="s.status"></app-status-badge></td>
+                <td data-label="Prazo" [class.prazo-atrasado]="estaAtrasada(s)">
                   {{ s.dataPrazo ? (s.dataPrazo | date:'dd/MM/yyyy') : '—' }}
                   <span *ngIf="estaAtrasada(s)" class="tag-atraso">Atrasada</span>
                 </td>
-                <td>
+                <td data-label="Ações">
                   <button class="btn-link" (click)="verDetalhes(s)">
                     <mat-icon>open_in_new</mat-icon> Ver
                   </button>
@@ -163,13 +163,13 @@
             </thead>
             <tbody>
               <tr *ngFor="let s of finalizadasList">
-                <td class="col-id">#{{ s.id }}</td>
-                <td class="col-titulo">{{ s.titulo }}</td>
-                <td>{{ s.categoriaNome }}</td>
-                <td><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
-                <td>{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
-                <td>{{ s.dataFinalizacao ? (s.dataFinalizacao | date:'dd/MM/yyyy') : '—' }}</td>
-                <td>
+                <td class="col-id" data-label="ID">#{{ s.id }}</td>
+                <td class="col-titulo" data-label="Título">{{ s.titulo }}</td>
+                <td data-label="Categoria">{{ s.categoriaNome }}</td>
+                <td data-label="Prioridade"><app-status-badge [prioridade]="s.prioridade ?? 'BAIXA'"></app-status-badge></td>
+                <td data-label="Abertura">{{ s.dataAbertura | date:'dd/MM/yyyy' }}</td>
+                <td data-label="Finalização">{{ s.dataFinalizacao ? (s.dataFinalizacao | date:'dd/MM/yyyy') : '—' }}</td>
+                <td data-label="Ações">
                   <button class="btn-link" (click)="verDetalhes(s)">
                     <mat-icon>open_in_new</mat-icon> Ver
                   </button>

@@ -185,5 +185,8 @@ export class DashboardGestorComponent implements OnInit {
     return this.atrasadasList.slice(start, start + 20);
   }
 
+  sidebarOpen = false;
+  toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+
   logout(): void { this.auth.logout(); }
 }
