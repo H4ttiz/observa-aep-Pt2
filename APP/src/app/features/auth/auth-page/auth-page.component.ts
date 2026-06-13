@@ -18,6 +18,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
 import { CadastroRequest, LoginRequest } from '../../../core/models/auth.model';
 import { EnderecoUsuarioFormComponent } from '../../../shared/components/endereco-usuario-form/endereco-usuario-form.component';
+import { WizardStepsComponent } from '../../../shared/components/wizard-steps/wizard-steps.component';
 
 function cpfValidator(ctrl: AbstractControl): ValidationErrors | null {
   const raw = (ctrl.value ?? '').replace(/\D/g, '');
@@ -45,7 +46,8 @@ function cpfValidator(ctrl: AbstractControl): ValidationErrors | null {
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    EnderecoUsuarioFormComponent
+    EnderecoUsuarioFormComponent,
+    WizardStepsComponent
   ],
   templateUrl: './auth-page.component.html',
   styleUrl: './auth-page.component.scss'
@@ -58,6 +60,7 @@ export class AuthPageComponent implements OnInit {
   showSenhaLogin = false;
   showSenhaCadastro = false;
   cadastroSubmitted = false;
+  cadastroStep: 1 | 2 = 1;
 
   loginForm!: FormGroup;
   cadastroForm!: FormGroup;
@@ -94,7 +97,23 @@ export class AuthPageComponent implements OnInit {
     this.loginForm.reset();
     this.cadastroForm.reset();
     this.cadastroSubmitted = false;
+    this.cadastroStep = 1;
     this.isLoading = false;
+  }
+
+  irParaEtapa2(): void {
+    const camposEtapa1 = ['nome', 'email', 'senha', 'cpf', 'celular'];
+    let valido = true;
+    camposEtapa1.forEach(campo => {
+      const ctrl = this.cadastroForm.get(campo);
+      ctrl?.markAsTouched();
+      if (ctrl?.invalid) valido = false;
+    });
+    if (valido) this.cadastroStep = 2;
+  }
+
+  voltarEtapa1(): void {
+    this.cadastroStep = 1;
   }
 
   aplicarMascaraCpf(event: Event): void {

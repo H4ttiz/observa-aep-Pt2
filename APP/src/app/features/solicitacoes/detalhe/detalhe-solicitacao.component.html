@@ -106,129 +106,40 @@
       </div>
     </div>
 
-    <!-- ── Linha 1: Status + Informações gerais ── -->
-    <div class="detalhe-grid">
+    <!-- ── Visão geral: título + categoria + descrição ── -->
+    <div class="card">
+      <div class="card-title-row">
+        <h2 class="card-title">{{ solicitacao.titulo }}</h2>
+        <span class="categoria-badge">{{ solicitacao.categoriaNome }}</span>
+      </div>
+      <p class="descricao-texto">{{ solicitacao.descricao }}</p>
+    </div>
 
-      <!-- Cartão de status -->
-      <div class="card status-card">
-        <h2 class="card-title">Status</h2>
+    <!-- ── Status + Linha do tempo ── -->
+    <div class="card status-card">
+      <h2 class="card-title">Status</h2>
 
-        <div class="status-wrap">
-          <app-status-badge [status]="solicitacao.status"></app-status-badge>
-          <span *ngIf="estaAtrasada()" class="badge-atraso">
-            <mat-icon>alarm_off</mat-icon> Atrasada
-          </span>
-        </div>
-
-        <div *ngIf="solicitacao.prioridade" class="status-wrap mt-sm">
-          <app-status-badge [prioridade]="solicitacao.prioridade"></app-status-badge>
-        </div>
-
-        <div class="info-grid mt-md">
-          <div class="info-item">
-            <span class="info-label">Categoria</span>
-            <span class="info-value">{{ solicitacao.categoriaNome }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Abertura</span>
-            <span class="info-value">{{ solicitacao.dataAbertura | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-          <div class="info-item" *ngIf="solicitacao.dataPrazo">
-            <span class="info-label">Prazo</span>
-            <span class="info-value" [class.texto-atrasado]="estaAtrasada()">
-              {{ solicitacao.dataPrazo | date:'dd/MM/yyyy' }}
-            </span>
-          </div>
-          <div class="info-item" *ngIf="solicitacao.dataFinalizacao">
-            <span class="info-label">Finalização</span>
-            <span class="info-value">{{ solicitacao.dataFinalizacao | date:'dd/MM/yyyy' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Anonimato</span>
-            <span class="info-value">{{ solicitacao.anonima ? 'Anônima' : 'Identificada' }}</span>
-          </div>
-        </div>
-
-        <!-- Motivo de rejeição -->
-        <div *ngIf="solicitacao.status === 'REJEITADA' && motivoRejeicao" class="motivo-rejeicao">
-          <p class="info-label">Motivo da Rejeição</p>
-          <p class="motivo-texto">{{ motivoRejeicao }}</p>
-        </div>
-
-        <!-- ── Ações Cidadão ── -->
-        <div *ngIf="podeCidadaoEditar" class="acoes-card">
-          <button class="btn-outline btn-editar" (click)="abrirFormEditar()" *ngIf="!showFormEditar">
-            <mat-icon>edit</mat-icon> Editar
-          </button>
-        </div>
-
-        <!-- ── Ações Gestor ── -->
-        <div *ngIf="eGestor" class="acoes-card">
-          <ng-container *ngIf="solicitacao.status === 'AGUARDANDO_APROVACAO'">
-            <button class="btn-success" (click)="abrirModalAprovar()">
-              <mat-icon>check</mat-icon> Aprovar
-            </button>
-            <button class="btn-danger" (click)="abrirModalRejeitar()">
-              <mat-icon>close</mat-icon> Rejeitar
-            </button>
-          </ng-container>
-          <ng-container *ngIf="solicitacao.status === 'REJEITADA'">
-            <button class="btn-warning" (click)="abrirModalReativar()">
-              <mat-icon>refresh</mat-icon> Reativar para nova análise
-            </button>
-          </ng-container>
-        </div>
-
-        <!-- ── Ações Atendente ── -->
-        <div *ngIf="eAtendente" class="acoes-card">
-          <ng-container *ngIf="solicitacao.status === 'AGUARDANDO_ATENDENTE'">
-            <button class="btn-success" (click)="onPegar()">
-              <mat-icon>assignment_ind</mat-icon> Assumir Caso
-            </button>
-          </ng-container>
-          <ng-container *ngIf="solicitacao.status === 'EM_ANDAMENTO'">
-            <button class="btn-success" (click)="onFinalizar()">
-              <mat-icon>check</mat-icon> Finalizar
-            </button>
-            <button class="btn-warning" (click)="onDesvincular()">
-              <mat-icon>link_off</mat-icon> Desvincular
-            </button>
-          </ng-container>
-        </div>
-
-        <!-- ── Ações Admin ── -->
-        <div *ngIf="eAdmin && solicitacao.anonima" class="acoes-card">
-          <button class="btn-danger" (click)="abrirModalAnonimato()">
-            <mat-icon>no_accounts</mat-icon> Revelar Identidade
-          </button>
-        </div>
-
+      <div class="status-wrap">
+        <app-status-badge [status]="solicitacao.status"></app-status-badge>
+        <span *ngIf="estaAtrasada()" class="badge-atraso">
+          <mat-icon>alarm_off</mat-icon> Atrasada
+        </span>
       </div>
 
-      <!-- Descrição -->
-      <div class="card">
-        <h2 class="card-title">Descrição</h2>
-        <p class="descricao-texto">{{ solicitacao.descricao }}</p>
-
-        <div class="info-grid mt-md">
-          <div class="info-item">
-            <span class="info-label">Solicitante</span>
-            <span class="info-value">
-              <span *ngIf="solicitacao.anonima && solicitacao.solicitanteNome === 'Anônimo'" class="badge-anonimo">
-                <mat-icon>person_off</mat-icon> Anônimo
-              </span>
-              <span *ngIf="!(solicitacao.anonima && solicitacao.solicitanteNome === 'Anônimo')">
-                {{ solicitacao.solicitanteNome }}
-              </span>
-            </span>
-          </div>
-          <div class="info-item" *ngIf="solicitacao.atendenteNome">
-            <span class="info-label">Atendente</span>
-            <span class="info-value">{{ solicitacao.atendenteNome }}</span>
-          </div>
-        </div>
+      <div *ngIf="solicitacao.prioridade" class="status-wrap mt-sm">
+        <app-status-badge [prioridade]="solicitacao.prioridade"></app-status-badge>
       </div>
 
+      <app-status-timeline class="mt-md"
+        [historicos]="solicitacao.historicos"
+        [statusAtual]="solicitacao.status">
+      </app-status-timeline>
+
+      <!-- Motivo de rejeição -->
+      <div *ngIf="solicitacao.status === 'REJEITADA' && motivoRejeicao" class="motivo-rejeicao">
+        <p class="info-label">Motivo da Rejeição</p>
+        <p class="motivo-texto">{{ motivoRejeicao }}</p>
+      </div>
     </div>
 
     <!-- ── Endereço + Mapa ── -->
@@ -269,8 +180,8 @@
     <!-- ── Imagens ── -->
     <div class="card">
       <div class="card-title-row">
-        <h2 class="card-title">Imagens ({{ solicitacao.imagens?.length ?? 0 }})</h2>
-        <div *ngIf="podeGerenciarImagens && (solicitacao.imagens?.length ?? 0) < 5" class="add-imagem-wrap">
+        <h2 class="card-title">Imagens ({{ solicitacao.imagens.length }})</h2>
+        <div *ngIf="podeGerenciarImagens && solicitacao.imagens.length < 5" class="add-imagem-wrap">
           <label class="btn-add-imagem" [class.loading]="adicionandoImagens">
             <mat-icon>add_photo_alternate</mat-icon>
             {{ adicionandoImagens ? 'Enviando...' : 'Adicionar' }}
@@ -303,6 +214,100 @@
       <ng-template #semImagens>
         <p class="sem-imagens-txt">Nenhuma imagem anexada.</p>
       </ng-template>
+    </div>
+
+    <!-- ── Dados Pessoais e Datas ── -->
+    <div class="card">
+      <h2 class="card-title">Dados Pessoais e Datas</h2>
+      <div class="info-grid info-grid-cols">
+        <div class="info-item">
+          <span class="info-label">Solicitante</span>
+          <span class="info-value">
+            <span *ngIf="solicitacao.anonima && solicitacao.solicitanteNome === 'Anônimo'" class="badge-anonimo">
+              <mat-icon>person_off</mat-icon> Anônimo
+            </span>
+            <span *ngIf="!(solicitacao.anonima && solicitacao.solicitanteNome === 'Anônimo')">
+              {{ solicitacao.solicitanteNome }}
+            </span>
+          </span>
+        </div>
+        <div class="info-item" *ngIf="solicitacao.atendenteNome">
+          <span class="info-label">Atendente</span>
+          <span class="info-value">{{ solicitacao.atendenteNome }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Abertura</span>
+          <span class="info-value">{{ solicitacao.dataAbertura | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="info-item" *ngIf="solicitacao.dataPrazo">
+          <span class="info-label">Prazo</span>
+          <span class="info-value" [class.texto-atrasado]="estaAtrasada()">
+            {{ solicitacao.dataPrazo | date:'dd/MM/yyyy' }}
+          </span>
+        </div>
+        <div class="info-item" *ngIf="solicitacao.dataFinalizacao">
+          <span class="info-label">Finalização</span>
+          <span class="info-value">{{ solicitacao.dataFinalizacao | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Anonimato</span>
+          <span class="info-value">{{ solicitacao.anonima ? 'Anônima' : 'Identificada' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Ações ── -->
+    <div class="card" *ngIf="podeCidadaoEditar || eGestor || eAtendente || (eAdmin && solicitacao.anonima)">
+      <h2 class="card-title">Ações</h2>
+
+      <!-- ── Ações Cidadão ── -->
+      <div *ngIf="podeCidadaoEditar" class="acoes-card">
+        <button class="btn-outline btn-editar" (click)="abrirFormEditar()" *ngIf="!showFormEditar">
+          <mat-icon>edit</mat-icon> Editar
+        </button>
+      </div>
+
+      <!-- ── Ações Gestor ── -->
+      <div *ngIf="eGestor" class="acoes-card">
+        <ng-container *ngIf="solicitacao.status === 'AGUARDANDO_APROVACAO'">
+          <button class="btn-success" (click)="abrirModalAprovar()">
+            <mat-icon>check</mat-icon> Aprovar
+          </button>
+          <button class="btn-danger" (click)="abrirModalRejeitar()">
+            <mat-icon>close</mat-icon> Rejeitar
+          </button>
+        </ng-container>
+        <ng-container *ngIf="solicitacao.status === 'REJEITADA'">
+          <button class="btn-warning" (click)="abrirModalReativar()">
+            <mat-icon>refresh</mat-icon> Reativar para nova análise
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- ── Ações Atendente ── -->
+      <div *ngIf="eAtendente" class="acoes-card">
+        <ng-container *ngIf="solicitacao.status === 'AGUARDANDO_ATENDENTE'">
+          <button class="btn-success" (click)="onPegar()">
+            <mat-icon>assignment_ind</mat-icon> Assumir Caso
+          </button>
+        </ng-container>
+        <ng-container *ngIf="solicitacao.status === 'EM_ANDAMENTO'">
+          <button class="btn-success" (click)="onFinalizar()">
+            <mat-icon>check</mat-icon> Finalizar
+          </button>
+          <button class="btn-warning" (click)="onDesvincular()">
+            <mat-icon>link_off</mat-icon> Desvincular
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- ── Ações Admin ── -->
+      <div *ngIf="eAdmin && solicitacao.anonima" class="acoes-card">
+        <button class="btn-danger" (click)="abrirModalAnonimato()">
+          <mat-icon>no_accounts</mat-icon> Revelar Identidade
+        </button>
+      </div>
+
     </div>
 
     <!-- ── Histórico ── -->

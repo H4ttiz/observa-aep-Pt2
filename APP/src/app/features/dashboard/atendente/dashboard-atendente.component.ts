@@ -132,5 +132,8 @@ export class DashboardAtendenteComponent implements OnInit {
   get totalEmAndamento(): number { return this.totalMinhasAndamento; }
   get totalConcluidas(): number { return this.totalFinalizadas; }
 
+  sidebarOpen = false;
+  toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+
   logout(): void { this.auth.logout(); }
 }

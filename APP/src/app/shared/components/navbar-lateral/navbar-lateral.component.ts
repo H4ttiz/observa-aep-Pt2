@@ -19,11 +19,18 @@ export interface NavItem {
 export class NavbarLateralComponent {
   @Input() items: NavItem[] = [];
   @Input() activeItem = '';
+  @Input() mobileOpen = false;
   @Output() itemSelected = new EventEmitter<string>();
+  @Output() mobileOpenChange = new EventEmitter<boolean>();
 
   collapsed = false;
 
   toggle(): void { this.collapsed = !this.collapsed; }
 
-  select(id: string): void { this.itemSelected.emit(id); }
+  select(id: string): void {
+    this.itemSelected.emit(id);
+    this.closeMobile();
+  }
+
+  closeMobile(): void { this.mobileOpenChange.emit(false); }
 }

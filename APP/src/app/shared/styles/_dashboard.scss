@@ -2,26 +2,28 @@
 // Shared dashboard styles — mixins usados pelos 4 dashboards
 // ─────────────────────────────────────────────────────────────
 
-$primary:   #2E8B7B;
-$accent:    #59C3B2;
-$hover:     #3AA693;
+$primary:   #2E7D32;
+$accent:    #14B8A6;
+$hover:     #256D29;
+$hover-accent: #0F9D8C;
 $white:     #FFFFFF;
-$bg:        #F5F7F8;
+$bg:        #F8FAFC;
 $bg-light:  #F8FAFC;
-$text:      #1E293B;
-$text2:     #334155;
-$muted:     #64748B;
-$border:    #E2E8F0;
-$red:       #DC2626;
-$orange:    #EA580C;
-$gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
+$text:      #1F2937;
+$text2:     #374151;
+$muted:     #6B7280;
+$border:    #D8E8DF;
+$red:       #EF4444;
+$orange:    #F59E0B;
+$gradient:  linear-gradient(135deg, #2E7D32 0%, #14B8A6 100%);
+$font-body: 'Source Sans 3', 'Source Sans Pro', 'Segoe UI', sans-serif;
 
 @mixin layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-family: $font-body;
   background: $bg;
 }
 
@@ -37,7 +39,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   background: $bg;
 
   &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+  &::-webkit-scrollbar-thumb { background: $border; border-radius: 3px; }
 }
 
 @mixin page-header {
@@ -49,6 +51,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
     color: $text;
     margin: 0 0 0.25rem;
     letter-spacing: -0.3px;
+    font-family: 'Montserrat', 'Segoe UI', sans-serif;
 
     strong { color: $primary; }
   }
@@ -57,6 +60,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
     font-size: 0.875rem;
     color: $muted;
     margin: 0;
+    font-family: $font-body;
   }
 }
 
@@ -71,6 +75,56 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   overflow: hidden;
   border: 1px solid $border;
+}
+
+// Em telas <768px, transforma linhas de tabela em cards verticais
+@mixin table-mobile-cards {
+  @media (max-width: 767px) {
+    thead { display: none; }
+
+    table, tbody, tr, td { display: block; width: 100%; }
+
+    tbody tr {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid $border;
+
+      &:hover { background: rgba(20,184,166,0.06); }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.35rem 0;
+      border: none;
+      text-align: right;
+      max-width: none;
+      white-space: normal;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: $muted;
+        text-align: left;
+        margin-right: auto;
+        flex-shrink: 0;
+      }
+
+      &:not([data-label])::before,
+      &[data-label=""]::before { content: none; }
+    }
+
+    .empty-row {
+      text-align: center;
+      justify-content: center;
+
+      &::before { content: none; }
+    }
+  }
 }
 
 @mixin data-table {
@@ -99,7 +153,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
     transition: background 0.15s;
 
     &:last-child { border-bottom: none; }
-    &:hover { background: $bg-light; }
+    &:hover { background: rgba(20,184,166,0.08); }
   }
 
   td {
@@ -130,6 +184,8 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
     padding: 2.5rem;
     font-style: italic;
   }
+
+  @include table-mobile-cards;
 }
 
 @mixin stats-grid {
@@ -144,10 +200,17 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   border-radius: 14px;
   padding: 1.25rem 1.5rem;
   border: 1px solid $border;
+  border-left: 4px solid $accent;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
   gap: 6px;
+  transition: box-shadow 0.2s, transform 0.2s;
+
+  &:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
 
   .stat-label {
     font-size: 0.75rem;
@@ -162,6 +225,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
     font-weight: 700;
     color: $text;
     line-height: 1;
+    font-family: 'Montserrat', sans-serif;
   }
 
   .stat-icon {
@@ -184,13 +248,13 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   padding: 0.65rem 1.5rem;
   font-size: 0.9rem;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   cursor: pointer;
   transition: all 0.2s;
 
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
-  &:hover { background: $hover; box-shadow: 0 4px 12px rgba(46,139,123,0.35); transform: translateY(-1px); }
+  &:hover { background: $hover; box-shadow: 0 4px 12px rgba(46,125,50,0.35); transform: translateY(-1px); }
   &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 }
 
@@ -205,13 +269,13 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   padding: 0.6rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   cursor: pointer;
   transition: all 0.2s;
 
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
-  &:hover { background: rgba(89,195,178,0.08); }
+  &:hover { background: rgba(20,184,166,0.08); border-color: $accent; color: $hover-accent; }
 }
 
 @mixin btn-danger {
@@ -225,13 +289,13 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   padding: 0.6rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   cursor: pointer;
   transition: all 0.2s;
 
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
-  &:hover { background: #B91C1C; box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
+  &:hover { background: #DC2626; box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
@@ -239,20 +303,20 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #059669;
+  background: #22C55E;
   color: $white;
   border: none;
   border-radius: 10px;
   padding: 0.6rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   cursor: pointer;
   transition: all 0.2s;
 
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
-  &:hover { background: #047857; }
+  &:hover { background: #16A34A; }
 }
 
 @mixin btn-link {
@@ -267,12 +331,12 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   transition: background 0.15s;
 
   mat-icon { font-size: 15px; width: 15px; height: 15px; }
 
-  &:hover { background: rgba(89,195,178,0.1); }
+  &:hover { background: rgba(20,184,166,0.1); }
 }
 
 @mixin form-card {
@@ -294,7 +358,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
     font-size: 0.85rem;
     font-weight: 600;
     color: $text2;
-    font-family: 'Inter', sans-serif;
+    font-family: $font-body;
   }
 
   .required { color: $red; }
@@ -308,7 +372,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   border: 1.5px solid $border;
   border-radius: 8px;
   font-size: 0.875rem;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   color: $text;
   background: $white;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -316,7 +380,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
 
   &:focus {
     border-color: $accent;
-    box-shadow: 0 0 0 3px rgba(89,195,178,0.15);
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.15);
   }
 
   &::placeholder { color: $muted; }
@@ -324,7 +388,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
 
 @mixin form-select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748B' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B7280' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 2.5rem;
@@ -366,7 +430,7 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
 
     mat-icon { font-size: 22px; width: 22px; height: 22px; color: $white; }
 
-    &.green { background: linear-gradient(135deg, #34D399, #059669); }
+    &.green { background: linear-gradient(135deg, #4ADE80, #2E7D32); }
     &.blue  { background: linear-gradient(135deg, #60A5FA, #2563EB); }
     &.teal  { background: $gradient; }
     &.orange { background: linear-gradient(135deg, #FBBF24, #D97706); }
@@ -392,8 +456,8 @@ $gradient:  linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: rgba(89,195,178,0.08);
-  border: 1px solid rgba(89,195,178,0.3);
+  background: rgba(20,184,166,0.08);
+  border: 1px solid rgba(20,184,166,0.3);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;

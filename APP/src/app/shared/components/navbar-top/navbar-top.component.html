@@ -1,10 +1,15 @@
 <header class="top-navbar">
 
-  <div class="navbar-brand">
-    <div class="brand-icon">
-      <mat-icon>account_balance</mat-icon>
+  <div class="navbar-left">
+    <button mat-icon-button class="menu-toggle-btn" (click)="menuToggle.emit()" aria-label="Abrir menu de navegação">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <div class="navbar-brand">
+      <!-- Logo: src/assets/images/logo.svg -->
+      <img src="assets/images/logo.svg" alt="ObservaAção" class="brand-logo" />
+      <span class="brand-name">ObservaAção</span>
     </div>
-    <span class="brand-name">ObservaAção</span>
   </div>
 
   <div class="navbar-actions">

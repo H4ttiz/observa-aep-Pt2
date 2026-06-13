@@ -28,15 +28,20 @@
           {{ usuario.nome.charAt(0).toUpperCase() }}
         </div>
       </div>
-      <label class="btn-outline foto-btn">
-        <mat-icon>photo_camera</mat-icon> Alterar foto
-        <input type="file" accept="image/*" (change)="onFotoChange($event)" hidden />
-      </label>
-      <button *ngIf="fotoFile" class="btn-primary" (click)="salvarFoto()" [disabled]="salvando">
-        <mat-icon>save</mat-icon> Salvar foto
-      </button>
-      <div class="perfil-tipo">
-        <span class="badge-perfil badge-{{ usuario.tipoUsuario }}">{{ usuario.tipoUsuario }}</span>
+
+      <h2 class="perfil-nome">{{ usuario.nome }}</h2>
+      <p class="perfil-email">{{ usuario.email }}</p>
+
+      <span class="badge-perfil badge-{{ usuario.tipoUsuario }}">{{ usuario.tipoUsuario }}</span>
+
+      <div class="foto-actions">
+        <label class="btn-outline foto-btn">
+          <mat-icon>photo_camera</mat-icon> Alterar foto
+          <input type="file" accept="image/*" (change)="onFotoChange($event)" hidden />
+        </label>
+        <button *ngIf="fotoFile" class="btn-primary" (click)="salvarFoto()" [disabled]="salvando">
+          <mat-icon>save</mat-icon> Salvar foto
+        </button>
       </div>
     </div>
 
@@ -59,15 +64,17 @@
           <app-field-error [errors]="nomeRef.errors" [touched]="nomeRef.touched" [submitted]="submitted"></app-field-error>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input class="form-input readonly" type="email" [value]="usuario!.email" disabled />
-          <span class="form-hint">O email não pode ser alterado por aqui.</span>
-        </div>
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label class="form-label">Email</label>
+            <input class="form-input readonly" type="email" [value]="usuario!.email" disabled />
+            <span class="form-hint">O email não pode ser alterado por aqui.</span>
+          </div>
 
-        <div class="form-group" *ngIf="usuario!.cpf">
-          <label class="form-label">CPF</label>
-          <input class="form-input readonly" type="text" [value]="usuario!.cpf" disabled />
+          <div class="form-group" *ngIf="usuario!.cpf">
+            <label class="form-label">CPF</label>
+            <input class="form-input readonly" type="text" [value]="usuario!.cpf" disabled />
+          </div>
         </div>
 
         <div class="form-group">
@@ -79,14 +86,34 @@
                  placeholder="(00) 00000-0000" />
         </div>
 
-        <!-- Trocar senha -->
-        <div class="senha-section">
-          <button type="button" class="btn-link" (click)="alterandoSenha ? cancelarSenha() : (alterandoSenha = true)">
-            <mat-icon>{{ alterandoSenha ? 'expand_less' : 'lock_outline' }}</mat-icon>
-            {{ alterandoSenha ? 'Cancelar troca de senha' : 'Alterar senha' }}
+        <!-- Accordion: Endereço -->
+        <div class="accordion">
+          <button type="button" class="accordion-header" (click)="enderecoExpandido = !enderecoExpandido" [attr.aria-expanded]="enderecoExpandido">
+            <span class="accordion-title">
+              <mat-icon>location_on</mat-icon>
+              Endereço
+            </span>
+            <mat-icon class="accordion-chevron">{{ enderecoExpandido ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+          <div class="accordion-body" [hidden]="!enderecoExpandido">
+            <app-endereco-usuario-form
+              [enderecoInicial]="usuario!.enderecoUsuario ?? null"
+              [submitted]="submitted">
+            </app-endereco-usuario-form>
+          </div>
+        </div>
+
+        <!-- Accordion: Alteração de Senha -->
+        <div class="accordion">
+          <button type="button" class="accordion-header" (click)="alterandoSenha ? cancelarSenha() : (alterandoSenha = true)" [attr.aria-expanded]="alterandoSenha">
+            <span class="accordion-title">
+              <mat-icon>lock_outline</mat-icon>
+              Alterar Senha
+            </span>
+            <mat-icon class="accordion-chevron">{{ alterandoSenha ? 'expand_less' : 'expand_more' }}</mat-icon>
           </button>
 
-          <div *ngIf="alterandoSenha" class="senha-fields">
+          <div *ngIf="alterandoSenha" class="accordion-body">
             <div class="form-group">
               <label class="form-label">Senha atual <span class="required">*</span></label>
               <app-password-input
@@ -127,15 +154,6 @@
               <app-field-error [errors]="confirmarRef.errors" [touched]="confirmarRef.touched" [submitted]="submitted"></app-field-error>
             </div>
           </div>
-        </div>
-
-        <!-- Endereço -->
-        <div class="form-group">
-          <label class="form-label section-label">Endereço</label>
-          <app-endereco-usuario-form
-            [enderecoInicial]="usuario!.enderecoUsuario ?? null"
-            [submitted]="submitted">
-          </app-endereco-usuario-form>
         </div>
 
         <div class="card-actions">

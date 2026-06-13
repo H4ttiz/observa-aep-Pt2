@@ -1,0 +1,83 @@
+$primary:   #2E7D32;
+$accent:    #14B8A6;
+$border:    #D8E8DF;
+$muted:     #6B7280;
+$text:      #1F2937;
+$white:     #FFFFFF;
+$gradient:  linear-gradient(135deg, #2E7D32 0%, #14B8A6 100%);
+$font-body: 'Source Sans 3', 'Source Sans Pro', 'Segoe UI', sans-serif;
+
+.wizard-steps {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  font-family: $font-body;
+  margin-bottom: 1.75rem;
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: $white;
+  border: 2px solid $border;
+  color: $muted;
+  transition: all 0.2s ease;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; color: $white; }
+}
+
+.step-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $muted;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.step-done .step-circle {
+  background: $gradient;
+  border-color: transparent;
+}
+
+.step-done .step-text { color: $primary; }
+
+.step-current .step-circle {
+  background: $accent;
+  border-color: $accent;
+  color: $white;
+  box-shadow: 0 0 0 4px rgba(20,184,166,0.18);
+}
+
+.step-current .step-text { color: $text; }
+
+.wizard-connector {
+  flex: 1 1 auto;
+  height: 2px;
+  min-width: 24px;
+  margin: 0 12px;
+  border-radius: 1px;
+  background: $border;
+  transition: background 0.3s ease;
+
+  &.connector-done { background: $gradient; }
+}
+
+@media (max-width: 480px) {
+  .step-text { display: none; }
+
+  .wizard-connector { margin: 0 8px; }
+}

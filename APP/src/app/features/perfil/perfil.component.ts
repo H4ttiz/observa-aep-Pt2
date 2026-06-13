@@ -40,6 +40,7 @@ export class PerfilComponent implements OnInit {
   form: UsuarioSelfUpdateRequest = {};
 
   alterandoSenha = false;
+  enderecoExpandido = false;
 
   fotoPreview: string | null = null;
   fotoFile: File | null = null;

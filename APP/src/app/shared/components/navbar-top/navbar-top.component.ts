@@ -17,6 +17,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class NavbarTopComponent {
   @Input() nomeUsuario = 'Usuário';
   @Output() logoutEvt = new EventEmitter<void>();
+  @Output() menuToggle = new EventEmitter<void>();
 
   readonly fotoPerfil$ = this.auth.fotoPerfil$;
 

@@ -1,9 +1,14 @@
-<nav class="sidebar" [class.collapsed]="collapsed">
+<div class="sidebar-backdrop" *ngIf="mobileOpen" (click)="closeMobile()"></div>
+
+<nav class="sidebar" [class.collapsed]="collapsed" [class.mobile-open]="mobileOpen">
 
   <div class="sidebar-header">
     <span class="sidebar-title" *ngIf="!collapsed">Menu</span>
     <button class="collapse-btn" (click)="toggle()" [matTooltip]="collapsed ? 'Expandir' : 'Recolher'" matTooltipPosition="right">
       <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
+    <button class="close-mobile-btn" (click)="closeMobile()" aria-label="Fechar menu">
+      <mat-icon>close</mat-icon>
     </button>
   </div>
 

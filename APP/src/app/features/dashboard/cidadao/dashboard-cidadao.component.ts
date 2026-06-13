@@ -96,5 +96,8 @@ export class DashboardCidadaoComponent implements OnInit {
     return new Date(s.dataPrazo) < new Date();
   }
 
+  sidebarOpen = false;
+  toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+
   logout(): void { this.auth.logout(); }
 }
