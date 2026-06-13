@@ -1,25 +1,27 @@
 // ──────────────────────────────────────────────────────────────────────
 // Design tokens
 // ──────────────────────────────────────────────────────────────────────
-$primary:     #2E8B7B;
-$accent:      #59C3B2;
-$hover:       #3AA693;
+$primary:     #2E7D32;
+$accent:      #14B8A6;
+$hover:       #256D29;
 $white:       #FFFFFF;
-$bg:          #F5F7F8;
-$soft-gray:   #DDE5E3;
-$text:        #2C3E50;
-$text-muted:  #7F8C8D;
-$gradient:    linear-gradient(135deg, #59C3B2 0%, #2E8B7B 100%);
+$bg:          #F8FAFC;
+$soft-gray:   #D8E8DF;
+$text:        #1F2937;
+$text-muted:  #6B7280;
+$gradient:    linear-gradient(135deg, #2E7D32 0%, #14B8A6 100%);
+$font-body:   'Source Sans 3', 'Source Sans Pro', 'Segoe UI', sans-serif;
 
 $radius-card: 20px;
 $radius-btn:  10px;
 $transition:  0.35s ease;
 
 // ──────────────────────────────────────────────────────────────────────
-// Wrapper
+// Wrapper — desktop: fixed viewport height, no page scroll
 // ──────────────────────────────────────────────────────────────────────
 .auth-wrapper {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,7 +49,11 @@ $transition:  0.35s ease;
 // ──────────────────────────────────────────────────────────────────────
 .left-panel {
   width: 40%;
-  background: $gradient;
+  background-image:
+    linear-gradient(155deg, rgba(46,125,50,0.82) 0%, rgba(20,184,166,0.74) 100%),
+    url('/assets/images/auth-background.webp');
+  background-size: cover;
+  background-position: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -106,13 +112,6 @@ $transition:  0.35s ease;
     position: absolute;
   }
 
-  .logo-icon-fallback {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-    color: $white;
-    opacity: 0.95;
-  }
 }
 
 // Título da marca
@@ -157,7 +156,7 @@ $transition:  0.35s ease;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   letter-spacing: 0.3px;
   transition: all $transition;
 
@@ -192,7 +191,11 @@ $transition:  0.35s ease;
   justify-content: center;
   padding: 3rem 3.5rem;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: $soft-gray; border-radius: 2px; }
 }
 
 .forms-container {
@@ -234,7 +237,7 @@ $transition:  0.35s ease;
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: rgba(89, 195, 178, 0.12);
+    background: rgba(20, 184, 166, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -310,7 +313,7 @@ mat-form-field {
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.4px;
-  font-family: 'Inter', sans-serif;
+  font-family: $font-body;
   cursor: pointer;
   transition: all $transition;
 
@@ -321,13 +324,39 @@ mat-form-field {
 
   &:not(:disabled):hover {
     --mdc-filled-button-container-color: #{$hover};
-    box-shadow: 0 6px 20px rgba(46, 139, 123, 0.35);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35);
     transform: translateY(-1px);
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.75;
+  }
+}
+
+// Ações da etapa 2 do wizard de cadastro (Voltar + Criar Conta)
+.wizard-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+
+  .submit-btn { flex: 1; margin-top: 0; }
+
+  .back-btn {
+    flex: 0 0 auto;
+    height: 50px;
+    border-radius: $radius-btn;
+    font-weight: 600;
+    font-family: $font-body;
+    border-color: $soft-gray;
+    color: $text-muted;
+
+    mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+    &:hover {
+      border-color: $accent;
+      color: $primary;
+    }
   }
 }
 
@@ -399,6 +428,9 @@ mat-form-field {
 // Mobile
 @media (max-width: 640px) {
   .auth-wrapper {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
     padding: 0;
     align-items: flex-start;
   }
@@ -427,6 +459,7 @@ mat-form-field {
     padding: 2rem 1.25rem 3rem;
     align-items: flex-start;
     min-height: auto;
+    overflow-y: visible;
   }
 
   .forms-container {
